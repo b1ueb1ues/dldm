@@ -2,6 +2,8 @@ import os
 from UnityPy import AssetsManager
 
 outdir = 'out'
+assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/'
+#assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/ZZ'
 
 cmd = 'rm -r %s'%outdir
 os.system(cmd)
@@ -12,8 +14,7 @@ cmd += ';touch %s/container.txt'%outdir
 os.system(cmd)
 
 am = AssetsManager()
-am.load_folder('/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/')
-#am.load_folder('/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/ZZ')
+am.load_folder(assetdir)
 
 g_containers = {}
 scripts = {}
