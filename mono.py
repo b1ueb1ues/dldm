@@ -1,24 +1,29 @@
 import os
 from UnityPy import AssetsManager
 
+
 outdir = 'out'
-assetdir = 'assets'
+indir = 'assets'
 #outdir = 'out_test'
-#assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/ZZ'
+#indir = 'assets/ZZ'
 
-cmd = 'rm -r %s/*'%outdir
-os.system(cmd)
-cmd = 'mkdir %s/script'%outdir
-cmd += ';mkdir %s/behaviour'%outdir
-cmd += ';mkdir %s/behaviour_id'%outdir
-cmd += ';touch %s/container.txt'%outdir
-os.system(cmd)
 
-am = AssetsManager()
-am.load_folder(assetdir)
+def clean():
+    global outdir
+    global indir
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    outdir = pwd + '/' + outdir
+    indir = pwd + '/' + indir
 
-g_containers = {}
-scripts = {}
+    cmd = 'rm -r %s'%outdir
+    os.system(cmd)
+    cmd = 'mkdir %s'%outdir
+    cmd += ';mkdir %s/script'%outdir
+    cmd += ';mkdir %s/behaviour'%outdir
+    cmd += ';mkdir %s/behaviour_id'%outdir
+    cmd += ';touch %s/container.txt'%outdir
+    os.system(cmd)
+
 
 def contain(obj):
     global g_containers
@@ -27,6 +32,13 @@ def contain(obj):
     if cid not in g_containers:
         g_containers[cid] = container
 
+
+clean()
+am = AssetsManager()
+am.load_folder(indir)
+
+g_containers = {}
+scripts = {}
 
 for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
