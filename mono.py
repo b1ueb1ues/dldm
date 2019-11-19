@@ -2,15 +2,15 @@ import os
 from UnityPy import AssetsManager
 
 outdir = 'out'
-assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/'
-#outdir = '/out_test'
+assetdir = 'assets'
+#outdir = 'out_test'
 #assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/ZZ'
 
-cmd = 'rm -r %s'%outdir
+cmd = 'rm -r %s/*'%outdir
 os.system(cmd)
-cmd = 'mkdir %s'%outdir
-cmd += ';mkdir %s/script'%outdir
+cmd = 'mkdir %s/script'%outdir
 cmd += ';mkdir %s/behaviour'%outdir
+cmd += ';mkdir %s/behaviour_id'%outdir
 cmd += ';touch %s/container.txt'%outdir
 os.system(cmd)
 
@@ -30,7 +30,7 @@ def contain(obj):
 
 for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
-        if str(obj) == '<ObjectReader MonoScript>':
+        if obj.type == 'MonoScript':
             contain(obj)
             data = obj.read()
             dump = data.dump()
@@ -46,16 +46,22 @@ for name, asset in am.assets.items():
 
 for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
-        if str(obj) == '<ObjectReader MonoBehaviour>':
+        if obj.type == 'MonoBehaviour':
             contain(obj)
             data = obj.read()
             dump = data.dump()
 
-            script_id = data.script.path_id
-            if script_id in scripts:
-                fname = outdir + '/behaviour/' + scripts[script_id]
+            name = data.name
+            if name != '':
+                fname = outdir + '/behaviour/' + name
             else:
-                fname = outdir + '/behaviour/' + str(_id)
+                fname = outdir + '/behaviour_id/' + str(_id)
+
+            #script_id = data.script.path_id
+            #if script_id in scripts:
+            #    fname = outdir + '/behaviour/' + scripts[script_id]
+            #else:
+            #    fname = outdir + '/behaviour/' + str(_id)
             print(fname)
             fout = open(fname, 'w')
             fout.write(dump)
