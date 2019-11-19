@@ -3,6 +3,7 @@ from UnityPy import AssetsManager
 
 outdir = 'out'
 assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/'
+#outdir = '/out_test'
 #assetdir = '/home/bblues/Downloads/data/data/com.nintendo.zaga/files/assets/ZZ'
 
 cmd = 'rm -r %s'%outdir
@@ -35,6 +36,7 @@ for name, asset in am.assets.items():
             dump = data.dump()
 
             fname = outdir + '/script/' + str(_id)
+            print(fname)
             fout = open(fname, 'w')
             fout.write(dump)
             fout.close()
@@ -54,6 +56,7 @@ for name, asset in am.assets.items():
                 fname = outdir + '/behaviour/' + scripts[script_id]
             else:
                 fname = outdir + '/behaviour/' + str(_id)
+            print(fname)
             fout = open(fname, 'w')
             fout.write(dump)
             fout.close()
