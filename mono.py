@@ -2,26 +2,29 @@ import os
 from UnityPy import AssetsManager
 
 
-outdir = 'out'
-indir = 'assets'
-#outdir = 'out_test'
-#indir = 'assets/ZZ'
+OUTDIR = 'out'
+INDIR = 'assets'
+FILTER = ['Action','Data','Textlabel', 'Enemy']
+#OUTDIR = 'out_test'
+#INDIR = 'assets/GG'
 
 
 def clean():
-    global outdir
-    global indir
+    global OUTDIR
+    global INDIR
+    global FILTER
     pwd = os.path.dirname(os.path.abspath(__file__))
-    outdir = pwd + '/' + outdir
-    indir = pwd + '/' + indir
+    OUTDIR = pwd + '/' + OUTDIR
+    INDIR = pwd + '/' + INDIR
 
-    cmd = 'rm -r %s'%outdir
+    cmd = 'rm -r %s'%OUTDIR
     os.system(cmd)
-    cmd = 'mkdir %s'%outdir
-    cmd += ';mkdir %s/script'%outdir
-    cmd += ';mkdir %s/behaviour'%outdir
-    cmd += ';mkdir %s/behaviour_id'%outdir
-    cmd += ';touch %s/container.txt'%outdir
+    cmd = 'mkdir %s'%OUTDIR
+    #cmd += ';mkdir %s/script'%OUTDIR
+    cmd += ';mkdir %s/behaviour'%OUTDIR
+    if not FILTER:
+        cmd += ';mkdir %s/behaviour_id'%OUTDIR
+    cmd += ';touch %s/container.txt'%OUTDIR
     os.system(cmd)
 
 
@@ -35,23 +38,26 @@ def contain(obj):
 
 clean()
 am = AssetsManager()
-am.load_folder(indir)
+am.load_folder(INDIR)
 
 g_containers = {}
 scripts = {}
 
 for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
+        contain(obj)
         if obj.type == 'MonoScript':
-            contain(obj)
+            #contain(obj)
             data = obj.read()
             dump = data.dump()
 
-            fname = outdir + '/script/' + str(_id)
-            print(fname)
-            fout = open(fname, 'w')
-            fout.write(dump)
-            fout.close()
+            if 0:
+                fname = OUTDIR + '/script/' + str(_id)
+                print(fname)
+                fout = open(fname, 'w')
+                dump = dump.replace('\r','')
+                fout.write(dump)
+                fout.close()
 
             scripts[_id] = data.class_name
 
@@ -59,32 +65,43 @@ for name, asset in am.assets.items():
 for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
         if obj.type == 'MonoBehaviour':
-            contain(obj)
+            #contain(obj)
             data = obj.read()
             dump = data.dump()
 
-            name = data.name
-            if name != '':
-                fname = outdir + '/behaviour/' + name
+            if 0:
+                name = data.name
+                if name != '':
+                    fname = OUTDIR + '/behaviour/' + name
+                else:
+                    fname = OUTDIR + '/behaviour_id/' + str(_id)
             else:
-                fname = outdir + '/behaviour_id/' + str(_id)
-
-            #script_id = data.script.path_id
-            #if script_id in scripts:
-            #    fname = outdir + '/behaviour/' + scripts[script_id]
-            #else:
-            #    fname = outdir + '/behaviour/' + str(_id)
-            print(fname)
-            fout = open(fname, 'w')
-            fout.write(dump)
-            fout.close()
+                script_id = data.script.path_id
+                if script_id in scripts:
+                    #name = scripts[script_id]
+                    fname = OUTDIR + '/behaviour/' + scripts[script_id]
+                else:
+                    #name = str(_id)
+                    fname = OUTDIR + '/behaviour_id/' + str(_id)
+            for i in FILTER:
+                #print(i, fname)
+                if i in fname:
+                    print(fname)
+                    fout = open(fname, 'a')
+                    fout.write(str(_id))
+                    fout.write('\n++++++++++++\n')
+                    dump = dump.replace('\r','')
+                    fout.write(dump)
+                    fout.write('\n')
+                    fout.close()
+                    break
 
 
 out_containers = {}
 for k,v in g_containers.items():
     out_containers.update(v)
 
-f = open(outdir+'/container.txt','w')
+f = open(OUTDIR+'/container.txt','w')
 for k,v in out_containers.items():
     f.write('%s\t %s\n'%(k, v))
 f.close()
