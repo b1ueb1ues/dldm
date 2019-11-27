@@ -1,8 +1,8 @@
 ## config ######################################################
 INDIR = 'assets'
-OUTDIR = 'out'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour']#, 'MonoScript']
-DIR_FILTER = ['action','master']
+OUTDIR = 'out2'
+TYPE_FILTER = ['GameObject', 'MonoBehaviour', 'Sprite', 'Texture2D']
+DIR_FILTER = ['action', 'master', 'image']
 
 
 ################################################################
@@ -53,6 +53,7 @@ def _do(src):
 
             #print(asset_path)
             fpname = os.path.join(DST, af)
+            os.makedirs(os.path.dirname(fpname), exist_ok=True)
             if 0:
                 pass
             elif obj.type == 'GameObject':
@@ -61,18 +62,40 @@ def _do(src):
                 monobehaviour(obj, fpname)
             elif obj.type == 'MonoScript':
                 monoscript(obj, fpname)
-#            elif obj.type == 'Texture2D':
-#                texture2d(obj, fpname)
+            elif obj.type == 'Texture2D':
+                texture2d(obj, fpname)
+            elif obj.type == 'Sprite':
+                sprite(obj, fpname)
             else:
                 common(obj, fpname)
+        for k, obj in asset.objects.items():
+            try:
+                name = obj.read().name
+            except:
+                name = None
+            if name and name != '':
+                fpname = os.path.join(DST, 'name/%s.png'%name)
+            else:
+                fpname = os.path.join(DST, 'id/%s.png'%obj.path_id)
+            if obj.type == 'Texture2D':
+                os.makedirs(os.path.dirname(fpname), exist_ok=True)
+                texture2d(obj, fpname)
+            elif obj.type == 'Sprite':
+                os.makedirs(os.path.dirname(fpname), exist_ok=True)
+                sprite(obj, fpname)
 
-#def texture2d(obj, fpname):
-#    data = obj.read()
-#    print(data.image)
-#    exit()
+def sprite(obj, fpname):
+    data = obj.read()
+    data.image.save(fpname)
+
+def texture2d(obj, fpname):
+    data = obj.read()
+    try:
+        data.image.save(fpname)
+    except EOFError:
+        pass
 
 def monoscript(obj, fpname):
-    os.makedirs(os.path.dirname(fpname), exist_ok=True)
     f = open(fpname, 'a')
     f.write('%s\n++++++++++++++++++++\n'%obj.path_id)
     data = obj.read()
@@ -82,7 +105,6 @@ def monoscript(obj, fpname):
     f.close()
 
 def monobehaviour(obj, fpname):
-    os.makedirs(os.path.dirname(fpname), exist_ok=True)
     f = open(fpname, 'a')
     f.write('%s\n++++++++++++++++++++\n'%obj.path_id)
     data = obj.read()
@@ -92,7 +114,6 @@ def monobehaviour(obj, fpname):
     f.close()
 
 def gameobject(obj, fpname):
-    os.makedirs(os.path.dirname(fpname), exist_ok=True)
     f = open(fpname, 'a')
     f.write('%s\n++++++++++++++++++++\n'%obj.path_id)
 
@@ -104,10 +125,12 @@ def gameobject(obj, fpname):
         f.write(data.dump().replace('\r',''))
         f.write('\n')
     f.close()
+    #f2 = open(fpname+'.go', 'a')
+    #f2.write(go.dump())
+    #exit()
 
 def common(obj, fpname):
     try:
-        os.makedirs(os.path.dirname(fpname), exist_ok=True)
         data = obj.read()
         f = open(fpname, 'wb')
         f.write(data.get_raw_data())
