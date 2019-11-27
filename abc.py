@@ -3,8 +3,8 @@ from UnityPy import AssetsManager
 from collections import Counter
 import zipfile
 
-TYPES = ['MonoScript','MonoBehaviour'] #,'TextAsset']
-FILTER = ['resources/master', 'resources/actions']
+TYPES = ['Sprite', 'Texture2D', 'MonoScript', 'GameObject']
+FILTER = None
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -34,12 +34,12 @@ def main():
             extension = os.path.splitext(f)[1]
             src = os.path.realpath(os.path.join(root, f))
 
-            if extension == ".zip":
-                archive = zipfile.ZipFile(src, 'r')
-                for zf in archive.namelist():
-                    extract_assets(archive.open(zf))
-            else:
-                extract_assets(src)
+            #if extension == ".zip":
+            #    archive = zipfile.ZipFile(src, 'r')
+            #    for zf in archive.namelist():
+            #        extract_assets(archive.open(zf))
+            #else:
+            extract_assets(src)
 
 
 def extract_assets(src):
@@ -78,9 +78,12 @@ def extract_assets(src):
 def export_obj(obj, fp: str, append_name: bool = False) -> list:
     global FILTER
     pick = 0
-    for i in FILTER:
-        if i in fp:
-            pick = 1
+    if FILTER:
+        for i in FILTER:
+            if i in fp:
+                pick = 1
+    else:
+        pick = 1
     if not pick:
         return []
     if obj.type not in TYPES:
