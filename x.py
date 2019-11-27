@@ -40,7 +40,6 @@ def asset_filter(path):
         return False
 
 
-
 def _do(src):
     global g_containers
     am = AssetsManager(src)
@@ -62,26 +61,27 @@ def _do(src):
                 gameobject(obj, fpname)
             elif obj.type == 'MonoBehaviour':
                 monobehaviour(obj, fpname)
+            elif obj.type == 'MonoScript':
+                monoscript(obj, fpname)
 #            elif obj.type == 'Texture2D':
 #                texture2d(obj, fpname)
             else:
                 common(obj, fpname)
 
-
-def common(obj, fpname):
-    try:
-        os.makedirs(os.path.dirname(fpname), exist_ok=True)
-        data = obj.read()
-        f = open(fpname, 'wb')
-        f.write(data.get_raw_data())
-        f.close()
-    except:
-        pass
-
 #def texture2d(obj, fpname):
 #    data = obj.read()
 #    print(data.image)
 #    exit()
+
+def monoscript(obj, fpname):
+    os.makedirs(os.path.dirname(fpname), exist_ok=True)
+    f = open(fpname, 'a')
+    f.write('%s\n++++++++++++++++++++\n'%obj.path_id)
+    data = obj.read()
+    f.write('%s\n--------------------\n'%data.path_id)
+    f.write(data.dump().replace('\r',''))
+    f.write('\n')
+    f.close()
 
 def monobehaviour(obj, fpname):
     os.makedirs(os.path.dirname(fpname), exist_ok=True)
@@ -107,6 +107,15 @@ def gameobject(obj, fpname):
         f.write('\n')
     f.close()
 
+def common(obj, fpname):
+    try:
+        os.makedirs(os.path.dirname(fpname), exist_ok=True)
+        data = obj.read()
+        f = open(fpname, 'wb')
+        f.write(data.get_raw_data())
+        f.close()
+    except:
+        pass
 
 def main():
     for root, dirs, files in os.walk(ASSETS, topdown=False):
