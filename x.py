@@ -141,6 +141,8 @@ def export_obj(obj, fp: str, append_name: bool = False) -> list:
 
 
 def gameobject(data, obj, fp, extension):
+    if not extension:
+        extension = '.txt'
     with open(f"{fp}{extension}", 'a') as f:
         f.write('%s\n++++++++++++++++++++\n'%obj.path_id)
         go = obj.read()
