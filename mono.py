@@ -5,8 +5,8 @@ from UnityPy import AssetsManager
 OUTDIR = 'out'
 INDIR = 'assets'
 FILTER = ['Action','Data','Textlabel', 'Enemy']
-#OUTDIR = 'out_test'
-#INDIR = 'assets/GG'
+OUTDIR = 'out_test'
+INDIR = 'assets/GG'
 
 
 def clean():
@@ -66,8 +66,15 @@ for name, asset in am.assets.items():
     for _id, obj in asset.objects.items():
         if obj.type == 'MonoBehaviour':
             #contain(obj)
+            container = obj.assets_file._container
+            print('+++++++++++++++')
+            print(container)
+            print('-',_id)
+            print('-obj',obj.path_id)
+            print('-data',data.path_id)
             data = obj.read()
             dump = data.dump()
+            print(dump)
 
             if 0:
                 name = data.name
