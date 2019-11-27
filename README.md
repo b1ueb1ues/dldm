@@ -2,4 +2,4 @@
 dragalia lost datamining
 
 # dependency
-pip3 install UnityPy
+see https://github.com/K0lb3/UnityPy

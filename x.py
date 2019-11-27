@@ -1,11 +1,9 @@
 ## config ######################################################
 INDIR = 'assets'
 OUTDIR = 'out'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour', 'MonoScript']
-DIR_FILTER = ['master', 'actions']
+TYPE_FILTER = ['GameObject', 'MonoBehaviour']#, 'MonoScript']
+DIR_FILTER = ['action','master']
 
-#INDIR = 'assets/RY' # playeraction
-#INDIR = 'assets/IW' # playeraction_
 
 ################################################################
 import os
@@ -125,8 +123,6 @@ def main():
         for f in files:
             src = os.path.realpath(os.path.join(root, f))
             _do(src)
-
-
     
 
 if __name__ == '__main__':
