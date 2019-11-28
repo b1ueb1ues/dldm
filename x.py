@@ -1,7 +1,7 @@
 # config ######################################################################
 
-TYPE_FILTER = ['Sprite', 'Texture2D', 'MonoScript', 'GameObject']
-PATH_FILTER = ['resources']
+#TYPE_FILTER = ['Sprite', 'Texture2D', 'MonoScript', 'GameObject']
+#PATH_FILTER = ['resources']
 IGNOR_DIR_COUNT = 2
 INDIR = 'assets'
 OUTDIR = 'out'
@@ -23,14 +23,9 @@ def clean(dst):
     os.makedirs(dst, exist_ok=True)
 
 def main():
-    global TYPE_FILTER
-    global PATH_FILTER
-    global IGNOR_DIR_COUNT
-    global INDIR
-    global OUTDIR
-    global ROOT
-    global ASSETS
-    global DST
+    global INDIR, OUTDIR
+    global TYPE_FILTER, PATH_FILTER, IGNOR_DIR_COUNT
+    global ROOT, ASSETS, DST
     global f_containers
     ROOT = os.path.dirname(os.path.realpath(__file__))
     ASSETS = os.path.join(ROOT, INDIR)
@@ -57,7 +52,6 @@ def main():
             extract_assets(src)
 
 
-
 def extract_assets(src):
     global DST
     # load source
@@ -72,8 +66,12 @@ def extract_assets(src):
             contain(asset.container)
 
         # check which mode we will have to use
-        num_cont = sum(1 for obj in asset.container.values() if obj.type in TYPE_FILTER)
-        num_objs = sum(1 for obj in asset.objects.values() if obj.type in TYPE_FILTER)
+        if TYPE_FILTER:
+            num_cont = sum( 1 for obj in asset.container.values() if obj.type in TYPE_FILTER)
+            num_objs = sum( 1 for obj in asset.objects.values() if obj.type in TYPE_FILTER)
+        else:
+            num_cont = sum( 1 for obj in asset.container.values() )
+            num_objs = sum( 1 for obj in asset.objects.values() )
 
         # check if container contains all important assets, if yes, just ignore the container
         if num_objs <= num_cont * 2:
@@ -101,9 +99,7 @@ def filter(path, otype):
                 pick = 1
     else:
         pick = 1
-    if TYPE_FILTER and otype in TYPE_FILTER:
-        pick *= 1
-    else:
+    if TYPE_FILTER and otype not in TYPE_FILTER:
         pick *= 0
     return pick
 
@@ -111,12 +107,16 @@ def filter(path, otype):
 def export_obj(obj, fp: str, append_name: bool = False) -> list:
     if not filter(fp, obj.type):
         return []
-
+    if obj.type in ['MeshFilter', 'Mesh']: # bugged
+        return []
     data = obj.read()
-    if data.name and data.name[0] == '/':
-        aname = '_'+data.name[1:]
-    else:
-        aname = data.name
+    if data.name :
+        if data.name[0] == '/':
+            aname = '_'+data.name[1:]
+        else:
+            aname = data.name
+    else :
+        aname = '_'
     if append_name:
         fp = os.path.join(fp, aname)
 
@@ -155,7 +155,6 @@ def gameobject(data, obj, fp, extension):
         f.close()
     return [obj.path_id]
 
-
 def monobehaviour(data, obj, fp, extension):
     if not extension:
         extension = '.txt'
@@ -182,7 +181,6 @@ def textasset(data, obj, fp, extension):
     with open(f"{fp}{extension}", 'wb') as f:
         f.write(data.script)
     return [obj.path_id]
-
 
 def sprite(data, obj, fp, extension):
     extension = ".png"
