@@ -11,10 +11,12 @@ import os
 from UnityPy import AssetsManager
 from collections import Counter
 
-g_containers = []
+f_containers = None
 def contain(container):
-    global g_containers
-    g_containers.append(container)
+    global f_containers
+    for k, v in container.items():
+        line = '%s\t %s\n'%(v.path_id, k)
+        f_containers.write(line)
 
 def clean(dst):
     os.system('rm -r '+dst)
@@ -29,6 +31,7 @@ def main():
     global ROOT
     global ASSETS
     global DST
+    global f_containers
     ROOT = os.path.dirname(os.path.realpath(__file__))
     ASSETS = os.path.join(ROOT, INDIR)
     DST = os.path.join(ROOT, OUTDIR)
@@ -40,6 +43,9 @@ def main():
 
     clean(DST)
 
+    ct = os.path.join(DST, 'containers.txt')
+    f_containers = open(ct, 'w')
+
     for root, dirs, files in os.walk(ASSETS, topdown=False):
         print(root)
         if '.git' in root:
@@ -50,12 +56,6 @@ def main():
             src = os.path.realpath(os.path.join(root, f))
             extract_assets(src)
 
-    ct = os.path.join(DST, 'containers.txt')
-    f = open(ct, 'w')
-    for i in g_containers:
-        for k, v in i.items():
-            line = '%s\t %s\n'%(v.path_id, k)
-            f.write(line)
 
 
 def extract_assets(src):
