@@ -123,21 +123,24 @@ def export_obj(obj, fp: str, append_name: bool = False) -> list:
     fp, extension = os.path.splitext(fp)
     os.makedirs(os.path.dirname(fp), exist_ok=True)
 
-    if 0 :
-        pass
-    elif obj.type == 'MonoScript':
-        return monoscript(data, obj, fp, extension)
-    elif obj.type == 'MonoBehaviour':
-        return monobehaviour(data, obj, fp, extension)
-    elif obj.type == 'TextAsset':
-        return textasset(data, obj, fp, extension)
-    elif obj.type == "Sprite":
-        return sprite(data, obj, fp, extension)
-    elif obj.type == "Texture2D":
-        return texture2d(data, obj, fp, extension)
-    elif obj.type == "GameObject":
-        return gameobject(data, obj, fp, extension)
-    return [obj.path_id]
+    try :
+        if 0 :
+            pass
+        elif obj.type == 'MonoScript':
+            return monoscript(data, obj, fp, extension)
+        elif obj.type == 'MonoBehaviour':
+            return monobehaviour(data, obj, fp, extension)
+        elif obj.type == 'TextAsset':
+            return textasset(data, obj, fp, extension)
+        elif obj.type == "Sprite":
+            return sprite(data, obj, fp, extension)
+        elif obj.type == "Texture2D":
+            return texture2d(data, obj, fp, extension)
+        elif obj.type == "GameObject":
+            return gameobject(data, obj, fp, extension)
+        return [obj.path_id]
+    except :
+        return []
 
 
 def gameobject(data, obj, fp, extension):

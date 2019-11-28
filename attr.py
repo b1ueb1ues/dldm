@@ -3,7 +3,6 @@ INDIR = 'assets'
 OUTDIR = 'out_attr'
 TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 PATH_FILTER = ['action', 'master']
-EXTRACT_OBJECT = True
 PREFIX = 'assets/_gluonresources/resources/'
 
 ################################################################
@@ -55,6 +54,17 @@ def export_obj(obj, asset_path):
         gameobject(obj, fpname)
     elif obj.type == 'MonoBehaviour':
         monobehaviour(obj, fpname)
+    elif obj.type == 'Material':
+        material(obj, fpname)
+
+def material(obj, fpname):
+    return
+    data = obj.read()
+    print(dir(data))
+    tts = data.m_SavedProperties.m_TexEnvs
+    for k, i in tts.items():
+        print(i.__dict__)
+    exit()
 
 def monobehaviour(obj, fpname):
     f = open(fpname, 'a')
