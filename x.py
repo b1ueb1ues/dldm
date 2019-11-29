@@ -19,6 +19,13 @@ def dprint(*args):
     if DEBUG:
         print(*args)
 
+g_containers = ''
+def contain(container):
+    global g_containers
+    for k, v in container.items():
+        line = '%s\t %s\n'%(v.path_id, k)
+        g_containers += line
+
 def asset_filter(path, otype):
     global PREFIX, PREFIXLEN
     global TYPE_FILTER, PATH_FILTER
@@ -44,6 +51,7 @@ def _do(src):
     global g_containers
     am = AssetsManager(src)
     for asset in am.assets.values():
+        contain(asset.container)
         for asset_path, obj in asset.container.items():
             export_obj(obj, asset_path)
 
@@ -79,11 +87,16 @@ def export_obj(obj, asset_path):
 
 # ------------------------------------------
 def common(obj, fpname):
-    extension = os.path.splitext(fpname)[1]
-    if not extension:
-        fpname1 += '.txt'
     data = obj.read()
-    f = open(fpname1, 'w')
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.txt'
+    fpname = basename + ext
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename + ext
+    f = open(fpname, 'w')
+
     f.write(data.dump())
     f.close()
     #fb = open(fpname+'.bin', 'wb')
@@ -91,15 +104,16 @@ def common(obj, fpname):
     #fb.close()
 
 def gameobject(obj, fpname):
-    extension = os.path.splitext(fpname)[1]
-    if not extension:
-        fpname += '.go.txt'
-    if os.path.exists(fpname):
-        raise
-    f = open(fpname, 'a')
-    f.write('%s\n++\n'%obj.path_id)
-
     go = obj.read()
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.gameobject'
+    fpname = basename + ext
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename + ext
+    f = open(fpname, 'w')
+    f.write('%s\n====================\n'%obj.path_id)
     cs = go.components
     for i in cs:
         data = i.read()
@@ -119,59 +133,70 @@ def material(obj, fpname):
                 texture2d(i.m_Texture, fpname+'/'+innername)
 
 def monobehaviour(obj, fpname):
-    extension = os.path.splitext(fpname)[1]
-    if not extension:
-        fpname += 'mb.txt'
-    f = open(fpname, 'a')
-    f.write('%s\n++\n'%obj.path_id)
     data = obj.read()
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.monobehaviour'
+    fpname = basename + ext
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename + ext
+    f = open(fpname, 'w')
+    f.write('%s\n====================\n'%obj.path_id)
     f.write('%s\n--------------------\n'%data.path_id)
     f.write(data.dump().replace('\r',''))
     f.write('\n')
     f.close()
 
 def monoscript(obj, fpname):
-    extension = os.path.splitext(fpname)[1]
-    if not extension:
-        fpname += 'ms.txt'
-    f = open(fpname, 'a')
-    f.write('%s\n++\n'%obj.path_id)
     data = obj.read()
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.monoscript'
+    fpname = basename + ext
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename + ext
+    f = open(fpname, 'w')
+    f.write('%s\n====================\n'%obj.path_id)
     f.write('%s\n--------------------\n'%data.path_id)
     f.write(data.dump().replace('\r',''))
     f.write('\n')
     f.close()
 
 def textasset(obj, fpname):
-    extension = os.path.splitext(fpname)[1]
-    if not extension:
-        fpname += '.txt'
     data = obj.read()
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.textasset'
+    fpname = basename + ext
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename + ext
     f = open(fpname, 'wb')
     f.write(data.script)
     f.close()
 
 def sprite(obj, fpname):
-    basename, extension = os.path.splitext(fpname)
-    if not extension:
-        fpname += '.png'
-    else:
-        fpname = basename+'.png'
     data = obj.read()
+    basename, extension = os.path.splitext(fpname)
+    fpname = basename+'.png'
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename+'.png'
     data.image.save(fpname)
 
 def texture2d(obj, fpname):
-    basename, extension = os.path.splitext(fpname)
-    if not extension:
-        fpname += '.png'
-    else:
-        fpname = basename+'.png'
     data = obj.read()
-    if not os.path.exists(fpname):
-        try:
-            data.image.save(fpname)
-        except EOFError:
-            pass
+    basename, extension = os.path.splitext(fpname)
+    fpname = basename+'.png'
+    while os.path.exists(fpname):
+        basename += '.1'
+        fpname = basename+'.png'
+    try:
+        data.image.save(fpname)
+    except EOFError:
+        pass
 
 
 def main():
@@ -197,6 +222,12 @@ def main():
         for f in files:
             src = os.path.realpath(os.path.join(root, f))
             _do(src)
+
+    ct = os.path.join(DST, 'containers.txt')
+    f_containers = open(ct, 'w')
+    f_containers.write(g_containers)
+    f_containers.close()
+
 
 if __name__ == '__main__':
     main()
