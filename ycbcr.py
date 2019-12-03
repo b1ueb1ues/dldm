@@ -6,13 +6,10 @@ INDIR = 'unitdetail'
 import os
 from PIL import Image
 
-#size = (512,512)
-size = (1024,1024)
-base_file_name = "unitdetail/amulet/400002_01/400002_01"
 
 
 extracted = {}
-def ycbcr(base_file_name, size=(1024, 1024)):
+def ycbcr(base_file_name):
     global inprefix
     if base_file_name in extracted:
         return
@@ -20,11 +17,13 @@ def ycbcr(base_file_name, size=(1024, 1024)):
 
     global DST
     if os.path.exists(base_file_name+"_Y.png"):
-        (z,z,z,y) = Image.open(base_file_name + "_Y.png").convert('RGBA').split()
+        tmp = Image.open(base_file_name + "_Y.png")
     elif os.path.exists(base_file_name+"_y.png"):
-        (z,z,z,y) = Image.open(base_file_name + "_y.png").convert('RGBA').split()
+        tmp = Image.open(base_file_name + "_y.png")
     else:
         return
+    size = tmp.size
+    (z,z,z,y) = tmp.convert('RGBA').split()
     if os.path.exists(base_file_name+"_Cb.png"):
         u = Image.open(base_file_name + "_Cb.png").convert('L').resize(size, Image.LANCZOS)
     elif os.path.exists(base_file_name+"_cb.png"):
@@ -37,18 +36,18 @@ def ycbcr(base_file_name, size=(1024, 1024)):
         v = Image.open(base_file_name + "_cr.png").convert('L').resize(size, Image.LANCZOS)
     else:
         return
+    alpha_file_name = base_file_name + "_alpha.png"
+
+    basedir = os.path.dirname(base_file_name)
+    if os.path.splitext(basedir)[1] == '.mat':
+        base_file_name = basedir[:-4]
+    print(base_file_name)
 
     merged = Image.merge("YCbCr", (y,u,v)).convert('RGB')
-    if DST:
-        fname = DST+'/'+base_file_name[inprefix:]+"_rgb.png"
-        os.makedirs(os.path.dirname(fname), exist_ok=True)
-    else:
-        fname = base_file_name+"_rgb.png"
-    merged.save(fname)
 
-    alpha_file_name = base_file_name + "_alpha.png"
     if os.path.exists(alpha_file_name):
-        (r,g,b,z) = Image.open(fname).convert('RGBA').split()
+        #(r,g,b,z) = Image.open(fname).convert('RGBA').split()
+        (r,g,b) = merged.split()
         s = Image.open(alpha_file_name).resize(size, Image.LANCZOS).split()
         if len(s) == 4:
             a = s[3]
@@ -57,11 +56,18 @@ def ycbcr(base_file_name, size=(1024, 1024)):
         else:
             raise
         merged = Image.merge("RGBA", (r,g,b,a))
+
         if DST:
             fname = DST+'/'+base_file_name[inprefix:]+"_rgba.png"
         else:
             fname = base_file_name+"_rgba.png"
-        merged.save(fname)
+    else:
+        if DST:
+            fname = DST+'/'+base_file_name[inprefix:]+"_rgb.png"
+        else:
+            fname = base_file_name+"_rgb.png"
+    os.makedirs(os.path.dirname(fname), exist_ok=True)
+    merged.save(fname)
 
 
 def main():
@@ -89,10 +95,10 @@ def main():
             if extension == '.png':
                 e = src.rfind('_')
                 bfn = src[:e]
-                print(bfn)
                 ycbcr(bfn)
 
 if __name__ == "__main__":
     main()
-    #ycbcr(base_file_name, size)
+    #base_file_name = "unitdetail/amulet/400002_01/400002_01"
+    #ycbcr(base_file_name)
 
