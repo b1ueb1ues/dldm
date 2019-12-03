@@ -12,6 +12,7 @@ import os
 from UnityPy import AssetsManager
 from collections import Counter
 
+
 def clean(dst):
     os.system('rm -r %s'%dst)
 
@@ -20,15 +21,15 @@ def dprint(*args):
         print(*args)
 
 g_containers = ''
-def contain(container):
+def contain(obj, asset_path):
     global g_containers
-    for k, v in container.items():
-        line = '%s\t %s\n'%(v.path_id, k)
-        g_containers += line
+    line = '%20d, %s, %s\n'%(obj.path_id, asset_path, obj.type)
+    g_containers += line
 
 def asset_filter(path, otype):
     global PREFIX, PREFIXLEN
     global TYPE_FILTER, PATH_FILTER
+    path = path.lower()
     if TYPE_FILTER and otype not in TYPE_FILTER:
         return False
     if path.find(PREFIX) == 0:
@@ -51,8 +52,19 @@ def _do(src):
     global g_containers
     am = AssetsManager(src)
     for asset in am.assets.values():
-        contain(asset.container)
         for asset_path, obj in asset.container.items():
+            contain(obj, asset_path)
+            if not obj.path_id:
+                af = obj.assets_file
+                for o in af.objects.values():
+                    #name = o.read().name
+                    name = o.read().name.split('/')[-1]
+                    if name:
+                        path = asset_path + '/' + name
+                    else:
+                        path = asset_path + '/' + '_'
+                    export_obj(o, path)
+                continue
             export_obj(obj, asset_path)
 
 def export_obj(obj, asset_path):
