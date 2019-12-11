@@ -108,7 +108,7 @@ def common(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-
+    f.write('%s\r\n====================\r\n'%obj.path_id)
     f.write(data.dump())
     f.close()
     #fb = open(fpname+'.bin', 'wb')
@@ -125,13 +125,13 @@ def gameobject(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\n====================\n'%obj.path_id)
+    f.write('%s\r\n====================\r\n'%obj.path_id)
     cs = go.components
     for i in cs:
         data = i.read()
-        f.write('%s\n--------------------\n'%data.path_id)
-        f.write(data.dump().replace('\r',''))
-        f.write('\n')
+        f.write('%s\r\n--------------------\r\n'%data.path_id)
+        f.write(data.dump())
+        f.write('\r\n')
     f.close()
 
 def material(obj, fpname):
@@ -154,10 +154,10 @@ def monobehaviour(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\n====================\n'%obj.path_id)
-    f.write('%s\n--------------------\n'%data.path_id)
-    f.write(data.dump().replace('\r',''))
-    f.write('\n')
+    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('%s\r\n--------------------\r\n'%data.path_id)
+    f.write(data.dump())
+    f.write('\r\n')
     f.close()
 
 def monoscript(obj, fpname):
@@ -170,10 +170,10 @@ def monoscript(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\n====================\n'%obj.path_id)
-    f.write('%s\n--------------------\n'%data.path_id)
-    f.write(data.dump().replace('\r',''))
-    f.write('\n')
+    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('%s\r\n--------------------\r\n'%data.path_id)
+    f.write(data.dump())
+    f.write('\r\n')
     f.close()
 
 def textasset(obj, fpname):
