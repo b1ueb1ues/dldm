@@ -1,5 +1,7 @@
 # config ######################################################################
 ACTIONSDIR = 'out/mono/actions'
+ANIMATION = 'out/anim/meshes/characters/motion/animationclips'
+OVERRIDE = 'out/anim/resources/characters/motion'
 SKILLDATA = 'out/mono/master/skilldata.asset'
 TEXTLABEL = 'out/mono/master/textlabel.asset'
 #TEXTLABEL = 'TextLabel.txt'
@@ -7,9 +9,6 @@ TEXTLABEL = 'out/mono/master/textlabel.asset'
 ###############################################################################
 import os
 import re
-
-fout = 0
-#OUTFILE = 'out/frame'
 
 aidframe = {}
 def aid2frame(fname):
@@ -49,39 +48,58 @@ def sid2aid():
         sae[i] = aid
 
 idname = {}
+idcomment = {}
 def cid2name():
-    global idchara
+    global idchara, idcomment
     data = open(TEXTLABEL).read()
     tmp = re.findall(r'CHARA_NAME_(\d+)"\n.*_Text = "(.*)"', data)
     for i in tmp:
         idname[i[0]] = i[1]
+    tmp = re.findall(r'CHARA_NAME_COMMENT_(\d+)"\n.*_Text = "(.*)"', data)
+    for i in tmp:
+        idcomment[i[0]] = i[1]
+        idname[i[0]] = i[1]
+
+labelframe = {}
+def anim2frame(fname):
+    global labelframe
+    if os.path.splitext(fname)[1] != '.anim':
+        return
+    data = open(fname).read()
+    name = re.findall(r'name = "(.*)"', data)[0]
+    time = re.findall(r'm_StopTime = (.*)', data)[0]
+    duration = float(time)
+    frame = int(duration*60+0.01)
+    labelframe[name] = frame
 
 
 def main():
     global OUTFILE, ACTIONSDIR
     global SRC, DST
-    global inprefix
-    global fout
     global idname, sae, aidframe
 
     cid2name()
     sid2aid()
 
-    if 'OUTFILE' not in globals():
-        OUTFILE = None
     ROOT = os.path.dirname(os.path.realpath(__file__))
-    #SRC = os.path.join(ROOT, ACTIONSDIR)
-    SRC = ACTIONSDIR
-    DST = os.path.join(ROOT, OUTFILE)
-    #fout = open(DST,'w')
-    inprefix = len(SRC)+1
 
+    SRC = ACTIONSDIR
     for root, dirs, files in os.walk(SRC, topdown=False):
-        #print(root)
-        if '.git' in root:
-            continue
         for f in files:
             aid2frame(root+'/'+f)
+
+    SRC = ANIMATION
+    for root, dirs, files in os.walk(SRC, topdown=False):
+        for f in files:
+            anim2frame(root+'/'+f)
+
+    SRC = OVERRIDE
+    for root, dirs, files in os.walk(SRC, topdown=False):
+        for f in files:
+            anim2frame(root+'/'+f)
+    global labelframe
+    print(labelframe)
+    exit()
 
     for cid in idname:
         name = idname[cid]
