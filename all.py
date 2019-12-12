@@ -1,6 +1,6 @@
 import x
 
 x.INDIR = 'assets'
-x.OUTDIR = 'out_all'
+x.OUTDIR = 'out/all'
 x.main()
 

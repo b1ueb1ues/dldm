@@ -2,8 +2,8 @@
 OUTFILE = 'out_frame'
 ACTIONSDIR = 'actions'
 SKILLDATA = 'skilldata.asset'
-#TEXTLABEL = 'textlabel.asset'
-TEXTLABEL = 'TextLabel.txt'
+TEXTLABEL = 'textlabel.asset'
+#TEXTLABEL = 'TextLabel.txt'
 
 ###############################################################################
 import os
@@ -22,7 +22,7 @@ def aid2frame(fname):
     aid = int(aid[0])
     duration = float(_seconds)*float(_speed)
     frame = int(duration*60+0.01)
-    print(aid, frame)
+    #print(aid, frame)
     aidframe[aid] = frame
 
 sa = {}
@@ -98,9 +98,6 @@ def main():
                 else:
                     f1.append(-1)
         for i in aid2:
-            if i == 590140:
-                print(aidframe[i])
-                exit()
             if i:
                 if i in aidframe:
                     f2.append(aidframe[i])

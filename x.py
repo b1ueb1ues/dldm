@@ -1,6 +1,6 @@
 ## config ######################################################
 INDIR = 'assets'
-OUTDIR = 'out'
+OUTDIR = 'out/x'
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
@@ -83,6 +83,8 @@ def export_obj(obj, asset_path):
         gameobject(obj, fpname)
     elif obj.type == 'Material':
         material(obj, fpname)
+#    elif obj.type == 'AnimatorOverrideController':
+#        aoc(obj, fpname)
 
     elif obj.type == 'MonoBehaviour':
         monobehaviour(obj, fpname)
@@ -143,6 +145,23 @@ def material(obj, fpname):
                 innername = i.m_Texture.read().name
                 os.makedirs(fpname, exist_ok=True)
                 texture2d(i.m_Texture, fpname+'/'+innername)
+
+#def aoc(obj, fpname):
+#    data = obj.read()
+#    clips = data.clips
+#    for i in clips:
+#        #print(dir(i))
+#        print(dir(i.override_clip))
+#        #print(dir(i.override_clip.assets_file))
+#        #print(i.override_clip.assets_file._container)
+#        print(i.override_clip.file_id)
+#        print(i.override_clip.path_id)
+#        exit()
+#
+#    tt = data.read_type_tree()
+#    oc = tt['m_Clips']
+#    print(oc)
+#    exit()
 
 def monobehaviour(obj, fpname):
     data = obj.read()
@@ -223,6 +242,8 @@ def main():
         TYPE_FILTER = 0
     if 'PATH_FILTER' not in globals():
         PATH_FILTER = 0
+    if PREFIX[-1] != '/':
+        PREFIX += '/'
     PREFIXLEN = len(PREFIX)
 
     clean(DST)

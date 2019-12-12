@@ -1,6 +1,6 @@
 # config ######################################################################
-OUTDIR = 'out_alphaa8'
-INDIR = 'icon'
+OUTDIR = 'out/alphaa8'
+INDIR = 'out/icon'
 
 ###############################################################################
 import os
@@ -20,7 +20,11 @@ def alphaa8(base_file_name, size=(1024, 1024)):
     extracted[base_file_name] = 1
 
     fname = base_file_name + ".png"
-    alpha_file_name = base_file_name + "_alphaA8.png"
+    alpha_file_name = base_file_name + "_alphaa8.png"
+    if not os.path.exists(alpha_file_name):
+        alpha_file_name = base_file_name + "_alphaA8.png"
+    if not os.path.exists(alpha_file_name):
+        return
 
     basedir = os.path.dirname(base_file_name)
     if os.path.splitext(basedir)[1] == '.mat':
