@@ -5,6 +5,7 @@ OUTDIR = 'out/x'
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
+CLEAN = True
 
 DEBUG = 0
 ################################################################
@@ -209,19 +210,25 @@ def textasset(obj, fpname):
     f.close()
 
 def sprite(obj, fpname):
+    global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
     fpname = basename+'.png'
     while os.path.exists(fpname):
+        if not CLEAN:
+            return
         basename += '.1'
         fpname = basename+'.png'
     data.image.save(fpname)
 
 def texture2d(obj, fpname):
+    global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
     fpname = basename+'.png'
     while os.path.exists(fpname):
+        if not CLEAN:
+            return
         basename += '.1'
         fpname = basename+'.png'
     try:
@@ -235,6 +242,7 @@ def main():
     global TYPE_FILTER, PATH_FILTER
     global PREFIX
     global PREFIXLEN
+    global CLEAN
     ROOT = os.path.dirname(os.path.realpath(__file__))
     ASSETS = os.path.join(ROOT, INDIR)
     DST = os.path.join(ROOT, OUTDIR)
@@ -246,7 +254,8 @@ def main():
         PREFIX += '/'
     PREFIXLEN = len(PREFIX)
 
-    clean(DST)
+    if CLEAN:
+        clean(DST)
 
     for root, dirs, files in os.walk(ASSETS, topdown=False):
         if '.git' in root:

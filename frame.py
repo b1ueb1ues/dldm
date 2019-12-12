@@ -1,8 +1,7 @@
 # config ######################################################################
-OUTFILE = 'out_frame'
-ACTIONSDIR = 'actions'
-SKILLDATA = 'skilldata.asset'
-TEXTLABEL = 'textlabel.asset'
+ACTIONSDIR = 'out/mono/actions'
+SKILLDATA = 'out/mono/master/skilldata.asset'
+TEXTLABEL = 'out/mono/master/textlabel.asset'
 #TEXTLABEL = 'TextLabel.txt'
 
 ###############################################################################
@@ -10,6 +9,7 @@ import os
 import re
 
 fout = 0
+#OUTFILE = 'out/frame'
 
 aidframe = {}
 def aid2frame(fname):
@@ -73,7 +73,7 @@ def main():
     #SRC = os.path.join(ROOT, ACTIONSDIR)
     SRC = ACTIONSDIR
     DST = os.path.join(ROOT, OUTFILE)
-    fout = open(DST,'w')
+    #fout = open(DST,'w')
     inprefix = len(SRC)+1
 
     for root, dirs, files in os.walk(SRC, topdown=False):
@@ -103,7 +103,7 @@ def main():
                     f2.append(aidframe[i])
                 else:
                     f2.append(-1)
-        print('%s;%s;%s;'%(name, f1, f2), cid, aid1, aid2)
+        print('%s,%s,%s,"%s %s %s"'%(name, f1, f2, cid, aid1, aid2))
 
 
 

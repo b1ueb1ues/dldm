@@ -4,7 +4,7 @@
 #PATH_FILTER = ['resources']
 IGNOR_DIR_COUNT = 2
 INDIR = 'assets'
-OUTDIR = 'out_abc'
+OUTDIR = 'abc'
 
 DEBUG = 1
 
