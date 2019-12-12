@@ -84,8 +84,8 @@ def export_obj(obj, asset_path):
         gameobject(obj, fpname)
     elif obj.type == 'Material':
         material(obj, fpname)
-#    elif obj.type == 'AnimatorOverrideController':
-#        aoc(obj, fpname)
+    elif obj.type == 'AnimatorOverrideController':
+        aoc(obj, fpname)
 
     elif obj.type == 'MonoBehaviour':
         monobehaviour(obj, fpname)
@@ -147,22 +147,25 @@ def material(obj, fpname):
                 os.makedirs(fpname, exist_ok=True)
                 texture2d(i.m_Texture, fpname+'/'+innername)
 
-#def aoc(obj, fpname):
-#    data = obj.read()
-#    clips = data.clips
-#    for i in clips:
-#        #print(dir(i))
-#        print(dir(i.override_clip))
-#        #print(dir(i.override_clip.assets_file))
-#        #print(i.override_clip.assets_file._container)
-#        print(i.override_clip.file_id)
-#        print(i.override_clip.path_id)
-#        exit()
-#
-#    tt = data.read_type_tree()
-#    oc = tt['m_Clips']
-#    print(oc)
-#    exit()
+def aoc(obj, fpname):
+    data = obj.read()
+    clips = data.clips
+    for o in data.assets_file.objects.values():
+        os.makedirs(fpname, exist_ok=True)
+        d = o.read()
+        if d.name and d.name != '' :
+            innername = d.name
+        else:
+            innername = str(o.path_id)
+
+        if o.type == 'AnimatorOverrideController':
+            common(o, fpname+'/'+innername)
+        elif o.type == 'AnimationClip':
+            common(o, fpname+'/'+innername+'.anim')
+        elif o.type == 'AssetBundle':
+            continue
+        else:
+            common(o, fpname+'/'+innername)
 
 def monobehaviour(obj, fpname):
     data = obj.read()
