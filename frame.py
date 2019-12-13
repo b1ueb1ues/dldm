@@ -135,7 +135,9 @@ def main():
         for i in aid2:
             if i:
                 f2.append(_do(cid, i))
-        print('"%s","%s","%s","%s %s %s"'%(name, f1, f2, cid, aid1, aid2))
+        bvid = idid[cid]
+        bvid = '%d;%d'%(bvid[0], bvid[1])
+        print('"%s","%s","%s","%s(%s) %s %s"'%(name, f1, f2, cid, bvid, aid1, aid2))
 
 def _do(cid, aid):
     global aidframe, idid, labelframe
@@ -165,8 +167,10 @@ def _do(cid, aid):
                 break
     if canceltime >= 0:
         return canceltime
-    else:
+    elif labeltime >= 0:
         return labeltime
+    else:
+        return label
 
 
 
