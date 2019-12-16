@@ -1,14 +1,15 @@
 # config ######################################################################
-ACTIONSDIR = 'out/mono/actions'
-ANIMATION = 'out/anim/meshes/characters/motion/animationclips'
-OVERRIDE = 'out/anim/resources/characters/motion'
-SKILLDATA = 'out/mono/master/skilldata.asset'
-CHARADATA = 'out/mono/master/charadata.asset'
-TEXTLABEL = 'out/mono/master/textlabel.asset'
-PLAYERACTIONHITATTRIBUTE = 'out/mono/master/playeractionhitattribute.asset'
-ANIMATION = 'out/anim/'
-OVERRIDE = 'out/anim/'
-TEXTLABEL = 'TextLabel.txt'
+ACTIONSDIR = 'out/skill/resources/actions'
+ANIMATION = 'out/skill/meshes/characters/motion/animationclips'
+OVERRIDE = 'out/skill/resources/characters/motion'
+SKILLDATA = 'out/skill/resources/master/skilldata.asset'
+CHARADATA = 'out/skill/resources/master/charadata.asset'
+TEXTLABEL = 'out/skill/resources/master/textlabel.asset'
+PLAYERACTIONHITATTRIBUTE = 'out/skill/resources/master/playeractionhitattribute.asset'
+
+#ANIMATION = 'out/anim/'
+#OVERRIDE = 'out/anim/'
+#TEXTLABEL = 'TextLabel.txt'
 
 ###############################################################################
 import os
