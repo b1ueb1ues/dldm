@@ -163,23 +163,40 @@ def main():
             continue
         aid1 = sae[int(cid+'1')]
         aid2 = sae[int(cid+'2')]
+        aido = {}
+        for i in range(3, 10):
+            sid = int(cid+str(i))
+            if sid in sae:
+                aido[sid] = sae[sid]
         f1 = []
         f2 = []
+        c1 = {}
+        c2 = {}
+        co = {}
+        fo = {}
         for i in aid1:
             if i:
                 f1.append(_do(cid, i))
-                c1 = coef(i)
+                c1[i] = coef(i)
         for i in aid2:
             if i:
                 f2.append(_do(cid, i))
-                c2 = coef(i)
+                c2[i] = coef(i)
+        for sid in aido:
+            aid = aido[sid]
+            fo[sid] = []
+            for i in aid:
+                if i:
+                    fo[sid].append(_do(cid, i))
+                    co["%s|%s"%(sid, i)] = coef(i)
+
         bvid = idid[cid]
         bvid = '%d;%d'%(bvid[0], bvid[1])
 
     
         print('"%s","%s","%s"'%(name, f1, f2),
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
-                ',"%s","%s"'%(c1, c2) 
+                ',"%s | %s","%s","%s"'%(c1, c2, co, fo) 
                 )
 def coef(aid):
     da1 = []
