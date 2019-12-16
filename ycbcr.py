@@ -58,14 +58,14 @@ def ycbcr(base_file_name):
         merged = Image.merge("RGBA", (r,g,b,a))
 
         if DST:
-            fname = DST+'/'+base_file_name[inprefix:]+"_rgba.png"
+            fname = DST+'/'+base_file_name[inprefix:]+"_ycbcra.png"
         else:
-            fname = base_file_name+"_rgba.png"
+            fname = base_file_name+"_ycbcra.png"
     else:
         if DST:
-            fname = DST+'/'+base_file_name[inprefix:]+"_rgb.png"
+            fname = DST+'/'+base_file_name[inprefix:]+"_ycbcr.png"
         else:
-            fname = base_file_name+"_rgb.png"
+            fname = base_file_name+"_ycbcr.png"
     os.makedirs(os.path.dirname(fname), exist_ok=True)
     merged.save(fname)
 

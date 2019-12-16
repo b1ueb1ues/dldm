@@ -168,6 +168,8 @@ def main():
                 bfn = src[:src.rfind('.png')]
                 alphaa8(bfn)
                 alpha(bfn)
+                e = src.rfind('_')
+                bfn = src[:e]
                 ycbcr(bfn)
 
 if __name__ == "__main__":
