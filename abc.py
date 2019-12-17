@@ -161,6 +161,7 @@ def export_obj(obj, fp: str, append_name: bool = False) -> list:
 
 
 def common(data, obj, fp, extension):
+    return []
     f = open(f"{fp}.txt", 'w')
     #fb = open(f"{fp}.bin", 'wb')
     f.write(data.dump())
