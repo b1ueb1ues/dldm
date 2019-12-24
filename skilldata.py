@@ -29,6 +29,7 @@ def playeractionhitattribute():
 aidframe = {}
 aidlabel = {}
 aidhit = {}
+aidhittiming = {}
 def playeraction(fname):
     global aidframe, aidlabel
     aid = re.findall(r'playeraction_(\d+).*', fname)
@@ -55,9 +56,17 @@ def playeraction(fname):
         frame = int(duration*60+0.01)
         aidframe[aid] = (frame, speed)
 
-    hd = re.findall(r'string _hitLabel = "(.*)"', data)
-    hd += re.findall(r'string _hitAttrLabel = "(.*)"', data)
-    aidhit[aid] = hd
+    #hd = re.findall(r'string _hitLabel = "(.*?)"', data, re.DOTALL)
+    #hd += re.findall(r'string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
+    #aidhit[aid] = hd
+    hd = re.findall(r'float _seconds = ([0-9\.]*)\n.{,240}string _hitLabel = "(.*?)"', data, re.DOTALL)
+    hd += re.findall(r'float _seconds = ([0-9\.]*)_\n.{,240}string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
+    aidhit[aid] = []
+    aidhittiming[aid] = []
+    for i in hd:
+        aidhittiming[aid].append(i[0])
+        aidhit[aid].append(i[1])
+    
 
 
 sa = {}
@@ -190,18 +199,29 @@ def main():
                 if i:
                     fo[sid].append(_do(cid, i))
                     co["%s.%s"%(sid, i)] = coef(i)
-        if int(cid) == 10550101:
-            print('--------------')
-            print(co)
-            print(fo)
-            exit()
 
         bvid = idid[cid]
         bvid = '%d;%d'%(bvid[0], bvid[1])
-    
+
+        aids = {}
+        for i in aid1:
+            aids[i] = 1
+        for i in aid2:
+            aids[i] = 1
+        for i in aido.values():
+            for j in i:
+                aids[j] = 1
+        timing = ''
+        if 0 in aids:
+            del(aids[0])
+        for i in aids:
+            timing += '%d:'%i
+            for j in aidhittiming[i]:
+                timing += '%.4f, '%(float(j))
+            timing += '| '
         print('"%s","%s","%s"'%(name, f1, f2),
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
-                ',"%s | %s","%s","%s"'%(c1, c2, co, fo) 
+                ',"%s | %s","%s","%s","%s"'%(c1, c2, co, fo, timing) 
                 )
 def coef(aid):
     da1 = []
