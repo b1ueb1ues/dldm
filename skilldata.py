@@ -278,6 +278,7 @@ def _do(cid, aid):
     #startframe = float(labels[-1][1]) * float(labels[-1][2])
     startframe = float(labels[-1][1])
     startframe = int(startframe*60+0.01)
+    speed = float(labels[-1][2])
     bvid = idid[cid]
     bvid = '%d%02d'%(bvid[0], bvid[1])
     labeltime = -1
@@ -299,7 +300,10 @@ def _do(cid, aid):
         else:
             return '%d/%.2f'%(canceltime[0], canceltime[1])
     elif labeltime >= 0:
-        return labeltime
+        if '%.2f'%speed == '1.00':
+            return labeltime
+        else:
+            return '%d/%.2f'%(labeltime, speed)
     else:
         return label
 
