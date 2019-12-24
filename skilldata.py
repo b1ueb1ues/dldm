@@ -9,7 +9,7 @@ PLAYERACTIONHITATTRIBUTE = 'out/skill/resources/master/playeractionhitattribute.
 
 #ANIMATION = 'out/anim/'
 #OVERRIDE = 'out/anim/'
-#TEXTLABEL = 'TextLabel.txt'
+TEXTLABEL = 'TextLabel.txt'
 
 ###############################################################################
 import os
@@ -49,10 +49,11 @@ def playeraction(fname):
         aidlabel[aid] = label
     if len(r) >= 1:
         _seconds, _speed = r[0]
-        #duration = float(_seconds)*float(_speed)  
-        duration = float(_seconds)
+        duration = float(_seconds)*float(_speed)  
+        speed = float(_speed)
+        #duration = float(_seconds)
         frame = int(duration*60+0.01)
-        aidframe[aid] = frame
+        aidframe[aid] = (frame, speed)
 
     hd = re.findall(r'string _hitLabel = "(.*)"', data)
     hd += re.findall(r'string _hitAttrLabel = "(.*)"', data)
@@ -263,7 +264,8 @@ def _do(cid, aid):
     if aid in aidframe:
         canceltime = aidframe[aid]
     else:
-        canceltime = -1
+        #canceltime = -1
+        canceltime = (-1, -1)
     if aid in aidlabel:
         labels = aidlabel[aid]
     else:
@@ -287,8 +289,11 @@ def _do(cid, aid):
             origin_ac_id  = labelid[aname]
             override_ac_id = override[ocname][origin_ac_id]
             labeltime = acframe[override_ac_id] + startframe
-    if canceltime >= 0:
-        return canceltime
+    if canceltime[0] >= 0:
+        if '%.2f'%canceltime[1] == '1.00':
+            return canceltime[0]
+        else:
+            return '%d/%.2f'%(canceltime[0], canceltime[1])
     elif labeltime >= 0:
         return labeltime
     else:
