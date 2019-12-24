@@ -189,11 +189,15 @@ def main():
             for i in aid:
                 if i:
                     fo[sid].append(_do(cid, i))
-                    co["%s|%s"%(sid, i)] = coef(i)
+                    co["%s.%s"%(sid, i)] = coef(i)
+        if int(cid) == 10550101:
+            print('--------------')
+            print(co)
+            print(fo)
+            exit()
 
         bvid = idid[cid]
         bvid = '%d;%d'%(bvid[0], bvid[1])
-
     
         print('"%s","%s","%s"'%(name, f1, f2),
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
