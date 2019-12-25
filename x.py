@@ -5,11 +5,12 @@ OUTDIR = 'out/x'
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
-CLEAN = True
+CLEAN = False
+RENAME = True
 
 DEBUG = 0
 ################################################################
-import os
+import os, sys
 from UnityPy import AssetsManager
 from collections import Counter
 
@@ -246,6 +247,10 @@ def main():
     global PREFIX
     global PREFIXLEN
     global CLEAN
+
+    if len(sys.argv) == 2:
+        INDIR = sys.argv[1]
+
     ROOT = os.path.dirname(os.path.realpath(__file__))
     ASSETS = os.path.join(ROOT, INDIR)
     DST = os.path.join(ROOT, OUTDIR)
@@ -259,6 +264,12 @@ def main():
 
     if CLEAN:
         clean(DST)
+    if RENAME:
+        count = 0
+        base = DST
+        while os.path.exists(DST):
+            DST = base + '.%d'%count
+            count += 1
 
     for root, dirs, files in os.walk(ASSETS, topdown=False):
         if '.git' in root:
