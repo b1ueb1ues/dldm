@@ -4,8 +4,19 @@ x.INDIR = 'assets'
 x.OUTDIR = 'out/skill'
 x.TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 x.TYPE_FILTER += ['AnimationClip', 'AnimatorOverrideController']
-x.PATH_FILTER = ['resources/actions/playeraction', 'resources/master']
-x.PATH_FILTER += ['resources/characters/motion', 'meshes/characters']
+
+x.PATH_FILTER = ['resources/characters/motion', 'meshes/characters', 'resources/master']
+x.PATH_FILTER += ['resources/actions/playeraction/state']
+x.PATH_FILTER += ['resources/actions/playeraction/cmn']
+x.PATH_FILTER += ['resources/actions/playeraction/axe']
+x.PATH_FILTER += ['resources/actions/playeraction/bow']
+x.PATH_FILTER += ['resources/actions/playeraction/can']
+x.PATH_FILTER += ['resources/actions/playeraction/dag']
+x.PATH_FILTER += ['resources/actions/playeraction/kat']
+x.PATH_FILTER += ['resources/actions/playeraction/lan']
+x.PATH_FILTER += ['resources/actions/playeraction/rot']
+x.PATH_FILTER += ['resources/actions/playeraction/swd']
+
 x.PREFIX = 'assets/_gluonresources/'
 
 x.main()
