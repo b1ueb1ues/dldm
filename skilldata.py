@@ -1,11 +1,13 @@
 # config ######################################################################
-ACTIONSDIR = 'out/skill/resources/actions'
-ANIMATION = 'out/skill/meshes/characters/motion/animationclips'
-OVERRIDE = 'out/skill/resources/characters/motion'
-SKILLDATA = 'out/skill/resources/master/skilldata.asset'
-CHARADATA = 'out/skill/resources/master/charadata.asset'
-TEXTLABEL = 'out/skill/resources/master/textlabel.asset'
-PLAYERACTIONHITATTRIBUTE = 'out/skill/resources/master/playeractionhitattribute.asset'
+PREFIX = 'out/all'
+
+ACTIONSDIR = PREFIX+'/resources/actions'
+ANIMATION = PREFIX+'/meshes/characters/motion/animationclips'
+OVERRIDE = PREFIX+'/resources/characters/motion'
+SKILLDATA = PREFIX+'/resources/master/skilldata.asset'
+CHARADATA = PREFIX+'/resources/master/charadata.asset'
+TEXTLABEL = PREFIX+'/resources/master/textlabel.asset'
+PLAYERACTIONHITATTRIBUTE = PREFIX+'/resources/master/playeractionhitattribute.asset'
 
 #ANIMATION = 'out/anim/'
 #OVERRIDE = 'out/anim/'
@@ -60,12 +62,15 @@ def playeraction(fname):
     #hd += re.findall(r'string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
     #aidhit[aid] = hd
     hd = re.findall(r'float _seconds = ([0-9\.]*)\n.{,240}string _hitLabel = "(.*?)"', data, re.DOTALL)
-    hd += re.findall(r'float _seconds = ([0-9\.]*)_\n.{,240}string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
+    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.{,240}string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
     aidhit[aid] = []
     aidhittiming[aid] = []
     for i in hd:
         aidhittiming[aid].append(i[0])
         aidhit[aid].append(i[1])
+#    if int(aid) == 691090:
+#        print(aid, hd)
+#        exit()
     
 
 
@@ -216,6 +221,8 @@ def main():
             del(aids[0])
         for i in aids:
             timing += '%d:'%i
+            if i not in aidhittiming:
+                continue
             for j in aidhittiming[i]:
                 timing += '%.4f, '%(float(j))
             timing += '| '
