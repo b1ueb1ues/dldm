@@ -242,6 +242,7 @@ def texture2d(obj, fpname):
 
 
 def main():
+    global INDIR, OUTDIR
     global ROOT, ASSETS, DST
     global TYPE_FILTER, PATH_FILTER
     global PREFIX
