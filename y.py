@@ -1,12 +1,12 @@
 ## config ######################################################
 INDIR = 'assets'
-OUTDIR = 'out/x'
+OUTDIR = 'out/y'
 TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite']
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
-CLEAN = False
+CLEAN = True
 RENAME = True
 
 DEBUG = 1
@@ -149,15 +149,17 @@ def gameobject(obj, fpname):
 
 def material(obj, fpname):
     data = obj.read()
-    f = open(os.path.splitext(fpname)[0]+'.dump','w')
+    f = open(os.path.splitext(fpname)[0],'w')
     f.write(data.dump())
     tts = data.m_SavedProperties.m_TexEnvs
     for k, i in tts.items():
+        print(k, i)
+        exit()
         if 'm_Texture' in dir(i):
             if i.m_Texture.type == 'Texture2D':
                 innername = i.m_Texture.read().name
                 os.makedirs(fpname, exist_ok=True)
-                texture2d(i.m_Texture, fpname+'/'+innername)
+                texture2d(i.m_Texture, fpname+'._/'+innername)
 
    # am = data.assets_manager
    # for i in am.assets.values():
@@ -201,11 +203,18 @@ def monobehaviour(obj, fpname):
     f.write('\r\n')
     f.close()
 
+    if '110058_01' in fpname:
+        print(dir(data))
+        tt = data.read_type_tree()
+        print(tt)
+        exit()
+
     stop = basename.rfind('/')
     lendst = len(DST)
-    subdirname = basename[lendst:stop+1]
+    #subdirname = basename[lendst:stop+1]
+    subdirname = basename[lendst:]
     subdirname = PREFIX.strip('/')+'/' \
-                    +subdirname.strip('/') + '/'
+                    +subdirname.strip('/') + '._/'
     #subdirname = basename+'.mb/'
     am = data.assets_manager
     for i in am.assets.values():
@@ -214,9 +223,10 @@ def monobehaviour(obj, fpname):
                 continue
             name = o.read().name
             path = str(o.path_id)
+            export_obj(o, subdirname+path, subbundle=True)
             if name:
                 name = name.replace('/','_')
-                export_obj(o, subdirname+name, subbundle=True)
+                export_obj(o, subdirname+name+path, subbundle=True)
             else:
                 export_obj(o, subdirname+path, subbundle=True)
 

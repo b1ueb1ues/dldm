@@ -90,6 +90,10 @@ def extract_assets(src):
             extracted = []
             # find the most common path
             occurence_count = Counter(os.path.splitext(asset_path)[0] for asset_path in asset.container.keys())
+            for i in asset.container.keys():
+                if 'master' in i :
+                    print(occurence_count)
+                    exit()
             local_path = os.path.join(DST, *occurence_count.most_common(1)[0][0].split('/')[IGNOR_DIR_COUNT:])
 
             for obj in asset.objects.values():
