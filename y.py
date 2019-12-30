@@ -1,7 +1,7 @@
 ## config ######################################################
 INDIR = 'assets'
 OUTDIR = 'out/y'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite']
+TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite', 'Material']
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
@@ -53,28 +53,17 @@ def asset_filter(path, otype):
     else:
         return False
 
-#def _do(src):
-#    global g_containers
-#    am = AssetsManager(src)
-#    for asset in am.assets.values():
-#        print(am.assets)
-#        for asset_path, obj in asset.container.items():
-#            contain(obj, asset_path)
-#            if not obj.path_id:
-#                af = obj.assets_file
-#                for o in af.objects.values():
-#                    #name = o.read().name
-#                    name = o.read().name.split('/')[-1]
-#                    if name:
-#                        path = asset_path + '/' + name
-#                    else:
-#                        path = asset_path + '/' + '_'
-#                    export_obj(o, path)
-#            else:
-#                export_obj(obj, asset_path)
-#        for o in asset.objects.values():
-#            _id = str(o.path_id)
-#            export_obj(o, '_/'+_id, allobj=True)
+def read_tree(_in, _out):
+    if type(_in) != dict and type(_in) != list:
+        return
+    for k, i in _in.items():
+        if type(i) == dict:
+            read_tree(i, _out)
+        elif type(i) == list:
+            for l in i:
+                read_tree(l, _out)
+        elif k=='m_PathID':
+            _out[i] = 1
 
 
 idpath = {}
@@ -109,7 +98,7 @@ def read_orig_file(src):
 extracted = {}
 def export_obj(obj, asset_path, filter=True):
     global extracted, queue
-    queue[obj.path_id] = 0
+    queue[obj.path_id] = None
     if obj.path_id and obj.path_id in extracted:
         return
     else:
@@ -130,24 +119,24 @@ def export_obj(obj, asset_path, filter=True):
     elif obj.type == 'GameObject':
         gameobject(obj, fpname, asset_path)
     elif obj.type == 'Material':
-        material(obj, fpname)
+        material(obj, fpname, asset_path)
     elif obj.type == 'MonoBehaviour':
-        monobehaviour(obj, fpname)
+        monobehaviour(obj, fpname, asset_path)
     elif obj.type == 'MonoScript':
-        monoscript(obj, fpname)
+        monoscript(obj, fpname, asset_path)
     elif obj.type == 'AnimatorOverrideController':
-        aoc(obj, fpname)
+        aoc(obj, fpname, asset_path)
     elif obj.type == 'TextAsset':
-        textasset(obj, fpname)
+        textasset(obj, fpname, asset_path)
     elif obj.type == 'Texture2D':
-        texture2d(obj, fpname)
+        texture2d(obj, fpname, asset_path)
     elif obj.type == 'Sprite':
-        sprite(obj, fpname)
+        sprite(obj, fpname, asset_path)
     else:
-        common(obj, fpname)
+        common(obj, fpname, asset_path)
 
 # ------------------------------------------
-def common(obj, fpname):
+def common(obj, fpname, asset_path):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -157,7 +146,7 @@ def common(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
     f.close()
     #fb = open(fpname+'.bin', 'wb')
@@ -174,40 +163,46 @@ def gameobject(obj, fpname, asset_path):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(go.dump())
     cs = go.components
     for i in cs:
         data = i.read()
-        f.write('%s\r\n--------------------\r\n'%data.path_id)
+        f.write('--------------------\r\n%s\r\n'%data.path_id)
         f.write(data.dump())
         f.write('\r\n')
         dname = os.path.dirname(asset_path)
         fname = os.path.basename(asset_path)
-        export_obj(obj, '%s/_%s/%s'%(dname, fname, i.path_id) )
+        #export_obj(i, '%s/_%s/%s'%(dname, fname, i.path_id) )
+        export_obj(i, '%s/_/%s'%(dname, i.path_id) )
     f.close()
 
-def material(obj, fpname):
+def material(obj, fpname, asset_path):
     data = obj.read()
-    f = open(os.path.splitext(fpname)[0],'w')
+    f = open(fpname,'w')
     f.write(data.dump())
     tts = data.m_SavedProperties.m_TexEnvs
+    tt = data.read_type_tree()
+    mat = {}
+    read_tree(tt, mat)
+    dname = os.path.dirname(asset_path)
+    fname = os.path.basename(asset_path)
+    for i in mat:
+        if i in queue:
+            obj = queue[i]
+            if obj:
+                #export_obj(obj, '%s/_%s/%s'%(dname, fname, obj.path_id) )
+                export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
+
     for k, i in tts.items():
-        print(k, i)
-        exit()
         if 'm_Texture' in dir(i):
             if i.m_Texture.type == 'Texture2D':
                 innername = i.m_Texture.read().name
-                os.makedirs(fpname, exist_ok=True)
-                texture2d(i.m_Texture, fpname+'._/'+innername)
+                os.makedirs('%s/__%s'%(dname, fname), exist_ok=True)
+                texture2d(i.m_Texture, '%s/__%s/%s'%(dname, fname, innername), asset_path )
 
-   # am = data.assets_manager
-   # for i in am.assets.values():
-   #     for obj in i.objects.values():
-   #         dprint(obj)
-   # exit()
 
-def aoc(obj, fpname):
+def aoc(obj, fpname, asset_path):
     data = obj.read()
     clips = data.clips
     for o in data.assets_file.objects.values():
@@ -227,7 +222,9 @@ def aoc(obj, fpname):
         else:
             common(o, fpname+'/'+innername)
 
-def monobehaviour(obj, fpname):
+
+def monobehaviour(obj, fpname, asset_path):
+    global queue
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -237,41 +234,27 @@ def monobehaviour(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    #f.write('%s\r\n====================\r\n'%obj.path_id)
-    #f.write('%s\r\n--------------------\r\n'%data.path_id)
+    #f.write('====================\r\n%s\r\n'%obj.path_id)
+    #f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
 
-    #if '110058_01' in fpname:
-    #    print(dir(data))
-    #    tt = data.read_type_tree()
-    #    print(tt)
-    #    exit()
-
-    #stop = basename.rfind('/')
-    #lendst = len(DST)
-    ##subdirname = basename[lendst:stop+1]
-    #subdirname = basename[lendst:]
-    #subdirname = PREFIX.strip('/')+'/' \
-    #                +subdirname.strip('/') + '._/'
-    ##subdirname = basename+'.mb/'
-    #am = data.assets_manager
-    #for i in am.assets.values():
-    #    for o in i.objects.values():
-    #        if o.type == 'MonoBehaviour':
-    #            continue
-    #        name = o.read().name
-    #        path = str(o.path_id)
-    #        export_obj(o, subdirname+path, subbundle=True)
-    #        if name:
-    #            name = name.replace('/','_')
-    #            export_obj(o, subdirname+name+path, subbundle=True)
-    #        else:
-    #            export_obj(o, subdirname+path, subbundle=True)
+    tt = data.read_type_tree()
+    mono_content_ids = {}
+    read_tree(tt, mono_content_ids)
+    dname = os.path.dirname(asset_path)
+    fname = os.path.basename(asset_path)
+    for i in mono_content_ids:
+        if i in queue:
+            obj = queue[i]
+            if obj:
+                #export_obj(obj, '%s/_%s/%s'%(dname, fname, obj.path_id) )
+                export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
 
 
-def monoscript(obj, fpname):
+
+def monoscript(obj, fpname, asset_path):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -281,13 +264,13 @@ def monoscript(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
-    f.write('%s\r\n--------------------\r\n'%data.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
+    f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
 
-def textasset(obj, fpname):
+def textasset(obj, fpname, asset_path):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -300,7 +283,7 @@ def textasset(obj, fpname):
     f.write(data.script)
     f.close()
 
-def sprite(obj, fpname):
+def sprite(obj, fpname, asset_path):
     global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
@@ -312,7 +295,7 @@ def sprite(obj, fpname):
         fpname = basename+'.png'
     data.image.save(fpname)
 
-def texture2d(obj, fpname):
+def texture2d(obj, fpname, asset_path):
     global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
