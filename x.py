@@ -201,24 +201,24 @@ def monobehaviour(obj, fpname):
     f.write('\r\n')
     f.close()
 
-    stop = basename.rfind('/')
-    lendst = len(DST)
-    subdirname = basename[lendst:stop+1]
-    subdirname = PREFIX.strip('/')+'/' \
-                    +subdirname.strip('/') + '/'
+    #stop = basename.rfind('/')
+    #lendst = len(DST)
+    #subdirname = basename[lendst:stop+1]
+    #subdirname = PREFIX.strip('/')+'/' \
+    #                +subdirname.strip('/') + '/'
     #subdirname = basename+'.mb/'
-    am = data.assets_manager
-    for i in am.assets.values():
-        for o in i.objects.values():
-            if o.type == 'MonoBehaviour':
-                continue
-            name = o.read().name
-            path = str(o.path_id)
-            if name:
-                name = name.replace('/','_')
-                export_obj(o, subdirname+name, subbundle=True)
-            else:
-                export_obj(o, subdirname+path, subbundle=True)
+    #am = data.assets_manager
+    #for i in am.assets.values():
+    #    for o in i.objects.values():
+    #        if o.type == 'MonoBehaviour':
+    #            continue
+    #        name = o.read().name
+    #        path = str(o.path_id)
+    #        if name:
+    #            name = name.replace('/','_')
+    #            export_obj(o, subdirname+name, subbundle=True)
+    #        else:
+    #            export_obj(o, subdirname+path, subbundle=True)
 
 
 def monoscript(obj, fpname):

@@ -9,7 +9,7 @@ PREFIX = 'assets/_gluonresources/'
 CLEAN = True
 RENAME = True
 
-DEBUG = 1
+DEBUG = 0
 ################################################################
 import os, sys
 from UnityPy import AssetsManager
@@ -37,6 +37,8 @@ def asset_filter(path, otype):
         return False
     if path.find(PREFIX) == 0:
         p = path[PREFIXLEN:]
+    elif path[0:2] == '_/':
+        p = path
     else:
         return False
     pick = 0
@@ -51,50 +53,84 @@ def asset_filter(path, otype):
     else:
         return False
 
-def _do(src):
+#def _do(src):
+#    global g_containers
+#    am = AssetsManager(src)
+#    for asset in am.assets.values():
+#        print(am.assets)
+#        for asset_path, obj in asset.container.items():
+#            contain(obj, asset_path)
+#            if not obj.path_id:
+#                af = obj.assets_file
+#                for o in af.objects.values():
+#                    #name = o.read().name
+#                    name = o.read().name.split('/')[-1]
+#                    if name:
+#                        path = asset_path + '/' + name
+#                    else:
+#                        path = asset_path + '/' + '_'
+#                    export_obj(o, path)
+#            else:
+#                export_obj(obj, asset_path)
+#        for o in asset.objects.values():
+#            _id = str(o.path_id)
+#            export_obj(o, '_/'+_id, allobj=True)
+
+
+idpath = {}
+queue = {}
+def read_orig_file(src):
     global g_containers
+    global idpath, queue
     am = AssetsManager(src)
+    idpath = {}
+    queue = {}
+
+    dprint('==============')
+    for asset in am.assets.values():
+        dprint('--------------')
+        for o in asset.objects.values():
+            dprint(o,o.read().name, o.path_id)
+            queue[o.path_id] = o
+
     for asset in am.assets.values():
         for asset_path, obj in asset.container.items():
             contain(obj, asset_path)
-            if not obj.path_id:
-                af = obj.assets_file
-                for o in af.objects.values():
-                    #name = o.read().name
-                    name = o.read().name.split('/')[-1]
-                    if name:
-                        path = asset_path + '/' + name
-                    else:
-                        path = asset_path + '/' + '_'
-                    export_obj(o, path)
-                continue
-            export_obj(obj, asset_path)
+            if obj.path_id:
+                export_obj(obj, asset_path)
+            else:
+                dprint('obj no path_id')
+                raise
+    for _id, obj in queue.items():
+        if obj:
+            export_obj(obj, '_/'+str(_id))
 
 
 extracted = {}
-def export_obj(obj, asset_path, filter=True, subbundle=False):
-    global extracted
+def export_obj(obj, asset_path, filter=True):
+    global extracted, queue
+    queue[obj.path_id] = 0
     if obj.path_id and obj.path_id in extracted:
         return
     else:
         extracted[obj.path_id] = 1
     if filter:
         af = asset_filter(asset_path, obj.type)
-        if not af:
+        if af:
+            fpname = os.path.join(DST, af)
+        else:
             return
-        fpname = os.path.join(DST, af)
     else:
         fpname = asset_path
+
     #dprint(asset_path)
     os.makedirs(os.path.dirname(fpname), exist_ok=True)
-    if obj.type == 'GameObject':
-        if not subbundle:
-            gameobject(obj, fpname)
-        return
-    if obj.type == 'Material':
-        if not subbundle:
-            material(obj, fpname)
-        return
+    if not obj.type:
+        pass
+    elif obj.type == 'GameObject':
+        gameobject(obj, fpname, asset_path)
+    elif obj.type == 'Material':
+        material(obj, fpname)
     elif obj.type == 'MonoBehaviour':
         monobehaviour(obj, fpname)
     elif obj.type == 'MonoScript':
@@ -128,7 +164,7 @@ def common(obj, fpname):
     #fb.write(data.get_raw_data())
     #fb.close()
 
-def gameobject(obj, fpname):
+def gameobject(obj, fpname, asset_path):
     go = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -139,12 +175,16 @@ def gameobject(obj, fpname):
         fpname = basename + ext
     f = open(fpname, 'w')
     f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write(go.dump())
     cs = go.components
     for i in cs:
         data = i.read()
         f.write('%s\r\n--------------------\r\n'%data.path_id)
         f.write(data.dump())
         f.write('\r\n')
+        dname = os.path.dirname(asset_path)
+        fname = os.path.basename(asset_path)
+        export_obj(obj, '%s/_%s/%s'%(dname, fname, i.path_id) )
     f.close()
 
 def material(obj, fpname):
@@ -197,38 +237,38 @@ def monobehaviour(obj, fpname):
         basename += '.1'
         fpname = basename + ext
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
-    f.write('%s\r\n--------------------\r\n'%data.path_id)
+    #f.write('%s\r\n====================\r\n'%obj.path_id)
+    #f.write('%s\r\n--------------------\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
 
-    if '110058_01' in fpname:
-        print(dir(data))
-        tt = data.read_type_tree()
-        print(tt)
-        exit()
+    #if '110058_01' in fpname:
+    #    print(dir(data))
+    #    tt = data.read_type_tree()
+    #    print(tt)
+    #    exit()
 
-    stop = basename.rfind('/')
-    lendst = len(DST)
-    #subdirname = basename[lendst:stop+1]
-    subdirname = basename[lendst:]
-    subdirname = PREFIX.strip('/')+'/' \
-                    +subdirname.strip('/') + '._/'
-    #subdirname = basename+'.mb/'
-    am = data.assets_manager
-    for i in am.assets.values():
-        for o in i.objects.values():
-            if o.type == 'MonoBehaviour':
-                continue
-            name = o.read().name
-            path = str(o.path_id)
-            export_obj(o, subdirname+path, subbundle=True)
-            if name:
-                name = name.replace('/','_')
-                export_obj(o, subdirname+name+path, subbundle=True)
-            else:
-                export_obj(o, subdirname+path, subbundle=True)
+    #stop = basename.rfind('/')
+    #lendst = len(DST)
+    ##subdirname = basename[lendst:stop+1]
+    #subdirname = basename[lendst:]
+    #subdirname = PREFIX.strip('/')+'/' \
+    #                +subdirname.strip('/') + '._/'
+    ##subdirname = basename+'.mb/'
+    #am = data.assets_manager
+    #for i in am.assets.values():
+    #    for o in i.objects.values():
+    #        if o.type == 'MonoBehaviour':
+    #            continue
+    #        name = o.read().name
+    #        path = str(o.path_id)
+    #        export_obj(o, subdirname+path, subbundle=True)
+    #        if name:
+    #            name = name.replace('/','_')
+    #            export_obj(o, subdirname+name+path, subbundle=True)
+    #        else:
+    #            export_obj(o, subdirname+path, subbundle=True)
 
 
 def monoscript(obj, fpname):
@@ -325,7 +365,7 @@ def main():
         print(root)
         for f in files:
             src = os.path.realpath(os.path.join(root, f))
-            _do(src)
+            read_orig_file(src)
 
     ct = os.path.join(DST, 'containers.txt')
     f_containers = open(ct, 'w')
