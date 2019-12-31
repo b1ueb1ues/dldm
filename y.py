@@ -66,14 +66,12 @@ def read_tree(_in, _out):
             _out[i] = 1
 
 
-idpath = {}
 queue = {}
 extracted = {}
 def read_orig_file(src):
     global g_containers
-    global idpath, queue
+    global queue, extracted
     am = AssetsManager(src)
-    idpath = {}
     queue = {}
     extracted = {}
 
@@ -92,16 +90,19 @@ def read_orig_file(src):
                 raise
     for _id, obj in queue.items():
         if obj:
-            export_obj(obj, '_/'+str(_id))
+            export_obj(obj, '__/'+str(_id))
 
 
 def export_obj(obj, asset_path, filter=True, dup=False):
     global queue, extracted
     if dup :
         extracted[obj.path_id] = queue[obj.path_id]
-    elif queue[obj.path_id]:
-        extracted[obj.path_id] = queue[obj.path_id]
-        queue[obj.path_id] = None
+    else:
+        if queue[obj.path_id]:
+            extracted[obj.path_id] = queue[obj.path_id]
+            queue[obj.path_id] = None
+        else:
+            return
     if filter:
         af = asset_filter(asset_path, obj.type)
         if af:
@@ -172,7 +173,7 @@ def gameobject(obj, fpname, asset_path):
         f.write('\r\n')
         dname = os.path.dirname(asset_path)
         fname = os.path.basename(asset_path)
-        export_obj(i, '%s/_/%s'%(dname, i.path_id) )
+        export_obj(i, '_/%s'%i.path_id )
     f.close()
 
 def material(obj, fpname, asset_path):
@@ -192,10 +193,13 @@ def material(obj, fpname, asset_path):
         if i in queue:
             obj = queue[i]
             if obj:
-                export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
+                export_obj(obj, '_/%s'%obj.path_id )
 
 
 def aoc(obj, fpname, asset_path):
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.aoc'
     data = obj.read()
     clips = data.clips
     for o in data.assets_file.objects.values():
@@ -241,7 +245,7 @@ def monobehaviour(obj, fpname, asset_path):
         if i in queue:
             obj = queue[i]
             if obj:
-                export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
+                export_obj(obj, '_/%s'%obj.path_id )
 
 
 
