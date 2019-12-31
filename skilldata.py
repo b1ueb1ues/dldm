@@ -1,5 +1,5 @@
 # config ######################################################################
-PREFIX = 'out/all'
+PREFIX = 'out/skill'
 
 ACTIONSDIR = PREFIX+'/resources/actions'
 ANIMATION = PREFIX+'/meshes/characters/motion/animationclips'
@@ -11,7 +11,7 @@ PLAYERACTIONHITATTRIBUTE = PREFIX+'/resources/master/playeractionhitattribute.as
 
 #ANIMATION = 'out/anim/'
 #OVERRIDE = 'out/anim/'
-TEXTLABEL = 'TextLabel.txt'
+#TEXTLABEL = 'TextLabel.txt'
 
 ###############################################################################
 import os

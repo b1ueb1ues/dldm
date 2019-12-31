@@ -68,16 +68,16 @@ def read_tree(_in, _out):
 
 idpath = {}
 queue = {}
+extracted = {}
 def read_orig_file(src):
     global g_containers
     global idpath, queue
     am = AssetsManager(src)
     idpath = {}
     queue = {}
+    extracted = {}
 
-    dprint('==============')
     for asset in am.assets.values():
-        dprint('--------------')
         for o in asset.objects.values():
             dprint(o,o.read().name, o.path_id)
             queue[o.path_id] = o
@@ -86,7 +86,7 @@ def read_orig_file(src):
         for asset_path, obj in asset.container.items():
             contain(obj, asset_path)
             if obj.path_id:
-                export_obj(obj, asset_path)
+                export_obj(obj, asset_path, dup=True)
             else:
                 dprint('obj no path_id')
                 raise
@@ -95,14 +95,13 @@ def read_orig_file(src):
             export_obj(obj, '_/'+str(_id))
 
 
-extracted = {}
-def export_obj(obj, asset_path, filter=True):
-    global extracted, queue
-    queue[obj.path_id] = None
-    if obj.path_id and obj.path_id in extracted:
-        return
-    else:
-        extracted[obj.path_id] = 1
+def export_obj(obj, asset_path, filter=True, dup=False):
+    global queue, extracted
+    if dup :
+        extracted[obj.path_id] = queue[obj.path_id]
+    elif queue[obj.path_id]:
+        extracted[obj.path_id] = queue[obj.path_id]
+        queue[obj.path_id] = None
     if filter:
         af = asset_filter(asset_path, obj.type)
         if af:
@@ -142,16 +141,15 @@ def common(obj, fpname, asset_path):
     if not ext:
         ext = '.txt'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
     f.close()
-    #fb = open(fpname+'.bin', 'wb')
-    #fb.write(data.get_raw_data())
-    #fb.close()
+
 
 def gameobject(obj, fpname, asset_path):
     go = obj.read()
@@ -159,9 +157,10 @@ def gameobject(obj, fpname, asset_path):
     if not ext:
         ext = '.gameobject'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(go.dump())
@@ -173,11 +172,13 @@ def gameobject(obj, fpname, asset_path):
         f.write('\r\n')
         dname = os.path.dirname(asset_path)
         fname = os.path.basename(asset_path)
-        #export_obj(i, '%s/_%s/%s'%(dname, fname, i.path_id) )
         export_obj(i, '%s/_/%s'%(dname, i.path_id) )
     f.close()
 
 def material(obj, fpname, asset_path):
+    basename, ext = os.path.splitext(fpname)
+    if not ext:
+        ext = '.mat'
     data = obj.read()
     f = open(fpname,'w')
     f.write(data.dump())
@@ -191,15 +192,7 @@ def material(obj, fpname, asset_path):
         if i in queue:
             obj = queue[i]
             if obj:
-                #export_obj(obj, '%s/_%s/%s'%(dname, fname, obj.path_id) )
                 export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
-
-    for k, i in tts.items():
-        if 'm_Texture' in dir(i):
-            if i.m_Texture.type == 'Texture2D':
-                innername = i.m_Texture.read().name
-                os.makedirs('%s/__%s'%(dname, fname), exist_ok=True)
-                texture2d(i.m_Texture, '%s/__%s/%s'%(dname, fname, innername), asset_path )
 
 
 def aoc(obj, fpname, asset_path):
@@ -230,12 +223,11 @@ def monobehaviour(obj, fpname, asset_path):
     if not ext:
         ext = '.monobehaviour'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
-    #f.write('====================\r\n%s\r\n'%obj.path_id)
-    #f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
@@ -249,7 +241,6 @@ def monobehaviour(obj, fpname, asset_path):
         if i in queue:
             obj = queue[i]
             if obj:
-                #export_obj(obj, '%s/_%s/%s'%(dname, fname, obj.path_id) )
                 export_obj(obj, '%s/_/%s'%(dname, obj.path_id) )
 
 
@@ -260,9 +251,10 @@ def monoscript(obj, fpname, asset_path):
     if not ext:
         ext = '.monoscript'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
@@ -276,9 +268,10 @@ def textasset(obj, fpname, asset_path):
     if not ext:
         ext = '.textasset'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'wb')
     f.write(data.script)
     f.close()
@@ -287,24 +280,28 @@ def sprite(obj, fpname, asset_path):
     global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
-    fpname = basename+'.png'
+    ext = '.png'
+    fpname = basename+ext
+    count = 0
     while os.path.exists(fpname):
         if not CLEAN:
             return
-        basename += '.1'
-        fpname = basename+'.png'
+        fpname = basename+'.%d'%count + ext
+        count += 1
     data.image.save(fpname)
 
 def texture2d(obj, fpname, asset_path):
     global CLEAN
     data = obj.read()
     basename, extension = os.path.splitext(fpname)
-    fpname = basename+'.png'
+    ext = '.png'
+    fpname = basename+ext
+    count = 0
     while os.path.exists(fpname):
         if not CLEAN:
             return
-        basename += '.1'
-        fpname = basename+'.png'
+        fpname = basename+'.%d'%count + ext
+        count += 1
     try:
         data.image.save(fpname)
     except EOFError:
