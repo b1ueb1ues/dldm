@@ -1,7 +1,7 @@
-## config ######################################################
+## config #####################################################################
 INDIR = 'assets'
-OUTDIR = 'out/y'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite', 'Material']
+OUTDIR = 'out/yy'
+TYPE_FILTER = ['MonoBehaviour','Texture2D','Sprite', 'Material']
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
@@ -10,7 +10,7 @@ CLEAN = True
 RENAME = True
 
 DEBUG = 0
-################################################################
+###############################################################################
 import os, sys
 from UnityPy import AssetsManager
 from collections import Counter
@@ -29,6 +29,14 @@ def contain(obj, asset_path):
     line = '%20d, %s, %s\n'%(obj.path_id, asset_path, obj.type)
     g_containers += line
 
+g_nocontainers = ''
+def nocontain(obj, asset_path):
+    global g_nocontainers
+    if obj.read:
+        name = obj.read().name
+    line = '%20d, %s, %s, %s\n'%(obj.path_id, asset_path, obj.type, obj.name)
+    g_nocontainers += line
+
 def asset_filter(path, otype):
     global PREFIX, PREFIXLEN
     global TYPE_FILTER, PATH_FILTER
@@ -38,6 +46,8 @@ def asset_filter(path, otype):
     if path.find(PREFIX) == 0:
         p = path[PREFIXLEN:]
     elif path[0:2] == '_/':
+        p = path
+    elif path[0:3] == '__/':
         p = path
     else:
         return False
@@ -82,19 +92,22 @@ def read_orig_file(src):
 
     for asset in am.assets.values():
         for asset_path, obj in asset.container.items():
-            contain(obj, asset_path)
             if obj.path_id:
                 export_obj(obj, asset_path, dup=True)
             else:
-                dprint('obj no path_id')
+                print('obj no path_id')
                 raise
-    for _id, obj in queue.items():
-        if obj:
-            export_obj(obj, '__/'+str(_id))
+    #for _id, obj in queue.items():
+    #    if obj and _id not in extracted:
+    #        export_obj(obj, '__/'+str(_id), noext=True)
 
 
-def export_obj(obj, asset_path, filter=True, dup=False):
+def export_obj(obj, asset_path, filter=True, dup=False, noext=False):
     global queue, extracted
+    if noext:
+        nocontain(obj, asset_path)
+    else:
+        contain(obj, asset_path)
     if dup :
         extracted[obj.path_id] = queue[obj.path_id]
     else:
@@ -117,26 +130,26 @@ def export_obj(obj, asset_path, filter=True, dup=False):
     if not obj.type:
         pass
     elif obj.type == 'GameObject':
-        gameobject(obj, fpname, asset_path)
+        gameobject(obj, fpname, asset_path, noext)
     elif obj.type == 'Material':
-        material(obj, fpname, asset_path)
+        material(obj, fpname, asset_path, noext)
     elif obj.type == 'MonoBehaviour':
-        monobehaviour(obj, fpname, asset_path)
+        monobehaviour(obj, fpname, asset_path, noext)
     elif obj.type == 'MonoScript':
-        monoscript(obj, fpname, asset_path)
+        monoscript(obj, fpname, asset_path, noext)
     elif obj.type == 'AnimatorOverrideController':
-        aoc(obj, fpname, asset_path)
+        aoc(obj, fpname, asset_path, noext)
     elif obj.type == 'TextAsset':
-        textasset(obj, fpname, asset_path)
+        textasset(obj, fpname, asset_path, noext)
     elif obj.type == 'Texture2D':
-        texture2d(obj, fpname, asset_path)
+        texture2d(obj, fpname, asset_path, noext)
     elif obj.type == 'Sprite':
-        sprite(obj, fpname, asset_path)
+        sprite(obj, fpname, asset_path, noext)
     else:
-        common(obj, fpname, asset_path)
+        common(obj, fpname, asset_path, noext)
 
 # ------------------------------------------
-def common(obj, fpname, asset_path):
+def common(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
@@ -152,10 +165,12 @@ def common(obj, fpname, asset_path):
     f.close()
 
 
-def gameobject(obj, fpname, asset_path):
+def gameobject(obj, fpname, asset_path, noext):
     go = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.gameobject'
     fpname = basename + ext
     count = 0
@@ -173,12 +188,14 @@ def gameobject(obj, fpname, asset_path):
         f.write('\r\n')
         dname = os.path.dirname(asset_path)
         fname = os.path.basename(asset_path)
-        export_obj(i, '_/%s'%i.path_id )
+        export_obj(i, '_/%s'%i.path_id , noext=True)
     f.close()
 
-def material(obj, fpname, asset_path):
+def material(obj, fpname, asset_path, noext):
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.mat'
     data = obj.read()
     f = open(fpname,'w')
@@ -193,12 +210,14 @@ def material(obj, fpname, asset_path):
         if i in queue:
             obj = queue[i]
             if obj:
-                export_obj(obj, '_/%s'%obj.path_id )
+                export_obj(obj, '_/%s'%obj.path_id, noext=True )
 
 
-def aoc(obj, fpname, asset_path):
+def aoc(obj, fpname, asset_path, noext):
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.aoc'
     data = obj.read()
     clips = data.clips
@@ -220,11 +239,13 @@ def aoc(obj, fpname, asset_path):
             common(o, fpname+'/'+innername)
 
 
-def monobehaviour(obj, fpname, asset_path):
+def monobehaviour(obj, fpname, asset_path, noext):
     global queue
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.monobehaviour'
     fpname = basename + ext
     count = 0
@@ -249,10 +270,12 @@ def monobehaviour(obj, fpname, asset_path):
 
 
 
-def monoscript(obj, fpname, asset_path):
+def monoscript(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.monoscript'
     fpname = basename + ext
     count = 0
@@ -266,10 +289,12 @@ def monoscript(obj, fpname, asset_path):
     f.write('\r\n')
     f.close()
 
-def textasset(obj, fpname, asset_path):
+def textasset(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.textasset'
     fpname = basename + ext
     count = 0
@@ -280,11 +305,14 @@ def textasset(obj, fpname, asset_path):
     f.write(data.script)
     f.close()
 
-def sprite(obj, fpname, asset_path):
+def sprite(obj, fpname, asset_path, noext):
     global CLEAN
     data = obj.read()
-    basename, extension = os.path.splitext(fpname)
-    ext = '.png'
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.png'
     fpname = basename+ext
     count = 0
     while os.path.exists(fpname):
@@ -292,13 +320,16 @@ def sprite(obj, fpname, asset_path):
             return
         fpname = basename+'.%d'%count + ext
         count += 1
-    data.image.save(fpname)
+    data.image.save(fpname,'png')
 
-def texture2d(obj, fpname, asset_path):
+def texture2d(obj, fpname, asset_path, noext):
     global CLEAN
     data = obj.read()
-    basename, extension = os.path.splitext(fpname)
-    ext = '.png'
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.png'
     fpname = basename+ext
     count = 0
     while os.path.exists(fpname):
@@ -307,7 +338,7 @@ def texture2d(obj, fpname, asset_path):
         fpname = basename+'.%d'%count + ext
         count += 1
     try:
-        data.image.save(fpname)
+        data.image.save(fpname,'png')
     except EOFError:
         pass
 
@@ -352,9 +383,13 @@ def main():
             read_orig_file(src)
 
     ct = os.path.join(DST, 'containers.txt')
-    f_containers = open(ct, 'w')
-    f_containers.write(g_containers)
-    f_containers.close()
+    f = open(ct, 'w')
+    f.write(g_containers)
+    f.close()
+    ct = os.path.join(DST, 'nocontainers.txt')
+    f = open(ct, 'w')
+    f.write(g_nocontainers)
+    f.close()
 
 
 if __name__ == '__main__':
