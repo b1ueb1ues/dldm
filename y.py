@@ -1,12 +1,14 @@
 ## config ######################################################
 INDIR = 'assets'
 OUTDIR = 'out/y'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite', 'Material']
+TYPE_FILTER = ['MonoBehaviour','Texture2D','Sprite', 'Material']
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
-CLEAN = True
+SUBASSET = True
+ALLID = False
+CLEAN = False
 RENAME = True
 
 DEBUG = 0
@@ -29,6 +31,14 @@ def contain(obj, asset_path):
     line = '%20d, %s, %s\n'%(obj.path_id, asset_path, obj.type)
     g_containers += line
 
+g_nocontainers = ''
+def nocontain(obj):
+    global g_nocontainers
+    if obj.read:
+        name = obj.read().name
+    line = '%20d, %s, %s\n'%(obj.path_id, name, obj.type)
+    g_nocontainers += line
+
 def asset_filter(path, otype):
     global PREFIX, PREFIXLEN
     global TYPE_FILTER, PATH_FILTER
@@ -38,6 +48,8 @@ def asset_filter(path, otype):
     if path.find(PREFIX) == 0:
         p = path[PREFIXLEN:]
     elif path[0:2] == '_/':
+        p = path
+    elif path[0:3] == '__/':
         p = path
     else:
         return False
@@ -88,9 +100,11 @@ def read_orig_file(src):
             else:
                 dprint('obj no path_id')
                 raise
-    for _id, obj in queue.items():
-        if obj:
-            export_obj(obj, '__/'+str(_id))
+    if ALLID:
+        for _id, obj in queue.items():
+            if obj:
+                nocontain(obj)
+                export_obj(obj, '__/'+str(_id))
 
 
 def export_obj(obj, asset_path, filter=True, dup=False):
@@ -171,9 +185,9 @@ def gameobject(obj, fpname, asset_path):
         f.write('--------------------\r\n%s\r\n'%data.path_id)
         f.write(data.dump())
         f.write('\r\n')
-        dname = os.path.dirname(asset_path)
-        fname = os.path.basename(asset_path)
-        export_obj(i, '_/%s'%i.path_id )
+        #dname = os.path.dirname(asset_path)
+        #fname = os.path.basename(asset_path)
+        #export_obj(i, '_/%s'%i.path_id )
     f.close()
 
 def material(obj, fpname, asset_path):
@@ -183,17 +197,19 @@ def material(obj, fpname, asset_path):
     data = obj.read()
     f = open(fpname,'w')
     f.write(data.dump())
-    tts = data.m_SavedProperties.m_TexEnvs
-    tt = data.read_type_tree()
-    mat = {}
-    read_tree(tt, mat)
-    dname = os.path.dirname(asset_path)
-    fname = os.path.basename(asset_path)
-    for i in mat:
-        if i in queue:
-            obj = queue[i]
-            if obj:
-                export_obj(obj, '_/%s'%obj.path_id )
+    f.close()
+    if SUBASSET:
+        tt = data.read_type_tree()
+        mat = {}
+        read_tree(tt, mat)
+        dname = os.path.dirname(asset_path)
+        fname = os.path.basename(asset_path)
+        for i in mat:
+            if i in queue:
+                obj = queue[i]
+                if obj:
+                    nocontain(obj)
+                    export_obj(obj, '_/%s'%obj.path_id )
 
 
 def aoc(obj, fpname, asset_path):
@@ -236,16 +252,18 @@ def monobehaviour(obj, fpname, asset_path):
     f.write('\r\n')
     f.close()
 
-    tt = data.read_type_tree()
-    mono_content_ids = {}
-    read_tree(tt, mono_content_ids)
-    dname = os.path.dirname(asset_path)
-    fname = os.path.basename(asset_path)
-    for i in mono_content_ids:
-        if i in queue:
-            obj = queue[i]
-            if obj:
-                export_obj(obj, '_/%s'%obj.path_id )
+    if SUBASSET:
+        tt = data.read_type_tree()
+        mono_content_ids = {}
+        read_tree(tt, mono_content_ids)
+        dname = os.path.dirname(asset_path)
+        fname = os.path.basename(asset_path)
+        for i in mono_content_ids:
+            if i in queue:
+                obj = queue[i]
+                if obj:
+                    nocontain(obj)
+                    export_obj(obj, '_/%s'%obj.path_id )
 
 
 
@@ -354,6 +372,10 @@ def main():
     ct = os.path.join(DST, 'containers.txt')
     f_containers = open(ct, 'w')
     f_containers.write(g_containers)
+    f_containers.close()
+    ct = os.path.join(DST, 'nocontainers.txt')
+    f_containers = open(ct, 'w')
+    f_containers.write(g_nocontainers)
     f_containers.close()
 
 
