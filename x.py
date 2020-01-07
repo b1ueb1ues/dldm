@@ -1,16 +1,17 @@
-## config ######################################################
+## config #####################################################################
 INDIR = 'assets'
 OUTDIR = 'out/x'
-TYPE_FILTER = ['GameObject', 'MonoBehaviour','Texture2D','Sprite']
+#TYPE_FILTER = ['MonoBehaviour','Texture2D','Sprite', 'Material']
 #TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 #PATH_FILTER = ['actions', 'master']
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
-CLEAN = False
+ALLID = False
+CLEAN = True
 RENAME = True
 
-DEBUG = 1
-################################################################
+DEBUG = 0
+###############################################################################
 import os, sys
 from UnityPy import AssetsManager
 from collections import Counter
@@ -29,6 +30,16 @@ def contain(obj, asset_path):
     line = '%20d, %s, %s\n'%(obj.path_id, asset_path, obj.type)
     g_containers += line
 
+g_nocontainers = ''
+def nocontain(obj, asset_path):
+    global g_nocontainers
+    if obj.read:
+        name = obj.read().name
+    else:
+        name = 'None'
+    line = '%20d, %s, %s, %s\n'%(obj.path_id, asset_path, obj.type, name)
+    g_nocontainers += line
+
 def asset_filter(path, otype):
     global PREFIX, PREFIXLEN
     global TYPE_FILTER, PATH_FILTER
@@ -37,6 +48,10 @@ def asset_filter(path, otype):
         return False
     if path.find(PREFIX) == 0:
         p = path[PREFIXLEN:]
+    elif path[0:2] == '_/':
+        p = path
+    elif path[0:3] == '__/':
+        p = path
     else:
         return False
     pick = 0
@@ -51,121 +66,163 @@ def asset_filter(path, otype):
     else:
         return False
 
-def _do(src):
+def read_tree(_in, _out):
+    if type(_in) != dict and type(_in) != list:
+        return
+    for k, i in _in.items():
+        if type(i) == dict:
+            read_tree(i, _out)
+        elif type(i) == list:
+            for l in i:
+                read_tree(l, _out)
+        elif k=='m_PathID':
+            _out[i] = 1
+
+
+queue = {}
+extracted = {}
+def read_orig_file(src):
     global g_containers
+    global queue, extracted
     am = AssetsManager(src)
+    queue = {}
+    extracted = {}
+
+    for asset in am.assets.values():
+        for o in asset.objects.values():
+            dprint(o,o.read().name, o.path_id)
+            queue[o.path_id] = o
+
     for asset in am.assets.values():
         for asset_path, obj in asset.container.items():
-            contain(obj, asset_path)
-            if not obj.path_id:
-                af = obj.assets_file
-                for o in af.objects.values():
-                    #name = o.read().name
-                    name = o.read().name.split('/')[-1]
-                    if name:
-                        path = asset_path + '/' + name
-                    else:
-                        path = asset_path + '/' + '_'
-                    export_obj(o, path)
-                continue
-            export_obj(obj, asset_path)
+            if obj.path_id:
+                export_obj(obj, asset_path, dup=True)
+            else:
+                print('obj no path_id')
+                raise
+    if ALLID:
+        for _id, obj in queue.items():
+            if obj and _id not in extracted:
+                export_obj(obj, '__/'+str(_id), noext=True)
 
 
-extracted = {}
-def export_obj(obj, asset_path, filter=True, subbundle=False):
-    global extracted
-    if obj.path_id and obj.path_id in extracted:
-        return
+def export_obj(obj, asset_path, filter=True, dup=False, noext=False):
+    global queue, extracted
+    if noext:
+        nocontain(obj, asset_path)
     else:
-        extracted[obj.path_id] = 1
+        contain(obj, asset_path)
+    if dup :
+        extracted[obj.path_id] = queue[obj.path_id]
+    else:
+        if queue[obj.path_id]:
+            extracted[obj.path_id] = queue[obj.path_id]
+            queue[obj.path_id] = None
+        else:
+            return
     if filter:
         af = asset_filter(asset_path, obj.type)
-        if not af:
+        if af:
+            fpname = os.path.join(DST, af)
+        else:
             return
-        fpname = os.path.join(DST, af)
     else:
         fpname = asset_path
+
     #dprint(asset_path)
     os.makedirs(os.path.dirname(fpname), exist_ok=True)
-    if obj.type == 'GameObject':
-        if not subbundle:
-            gameobject(obj, fpname)
-        return
-    if obj.type == 'Material':
-        if not subbundle:
-            material(obj, fpname)
-        return
+    if not obj.type:
+        pass
+    elif obj.type == 'GameObject':
+        gameobject(obj, fpname, asset_path, noext)
+    elif obj.type == 'Material':
+        material(obj, fpname, asset_path, noext)
     elif obj.type == 'MonoBehaviour':
-        monobehaviour(obj, fpname)
+        monobehaviour(obj, fpname, asset_path, noext)
     elif obj.type == 'MonoScript':
-        monoscript(obj, fpname)
+        monoscript(obj, fpname, asset_path, noext)
     elif obj.type == 'AnimatorOverrideController':
-        aoc(obj, fpname)
+        aoc(obj, fpname, asset_path, noext)
     elif obj.type == 'TextAsset':
-        textasset(obj, fpname)
+        textasset(obj, fpname, asset_path, noext)
     elif obj.type == 'Texture2D':
-        texture2d(obj, fpname)
+        texture2d(obj, fpname, asset_path, noext)
     elif obj.type == 'Sprite':
-        sprite(obj, fpname)
+        sprite(obj, fpname, asset_path, noext)
     else:
-        common(obj, fpname)
+        common(obj, fpname, asset_path, noext)
 
 # ------------------------------------------
-def common(obj, fpname):
+def common(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
     if not ext:
         ext = '.txt'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
     f.close()
-    #fb = open(fpname+'.bin', 'wb')
-    #fb.write(data.get_raw_data())
-    #fb.close()
 
-def gameobject(obj, fpname):
+
+def gameobject(obj, fpname, asset_path, noext):
     go = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.gameobject'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
+    f.write(go.dump())
     cs = go.components
     for i in cs:
         data = i.read()
-        f.write('%s\r\n--------------------\r\n'%data.path_id)
+        f.write('--------------------\r\n%s\r\n'%data.path_id)
         f.write(data.dump())
         f.write('\r\n')
+        dname = os.path.dirname(asset_path)
+        fname = os.path.basename(asset_path)
+        export_obj(i, '_/%s'%i.path_id , noext=True)
     f.close()
 
-def material(obj, fpname):
+def material(obj, fpname, asset_path, noext):
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.mat'
     data = obj.read()
-    f = open(os.path.splitext(fpname)[0]+'.dump','w')
+    f = open(fpname,'w')
     f.write(data.dump())
     tts = data.m_SavedProperties.m_TexEnvs
-    for k, i in tts.items():
-        if 'm_Texture' in dir(i):
-            if i.m_Texture.type == 'Texture2D':
-                innername = i.m_Texture.read().name
-                os.makedirs(fpname, exist_ok=True)
-                texture2d(i.m_Texture, fpname+'/'+innername)
+    tt = data.read_type_tree()
+    mat = {}
+    read_tree(tt, mat)
+    dname = os.path.dirname(asset_path)
+    fname = os.path.basename(asset_path)
+    for i in mat:
+        if i in queue:
+            obj = queue[i]
+            if obj:
+                export_obj(obj, '_/%s'%obj.path_id, noext=True )
 
-   # am = data.assets_manager
-   # for i in am.assets.values():
-   #     for obj in i.objects.values():
-   #         dprint(obj)
-   # exit()
 
-def aoc(obj, fpname):
+def aoc(obj, fpname, asset_path, noext):
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.aoc'
     data = obj.read()
     clips = data.clips
     for o in data.assets_file.objects.values():
@@ -185,95 +242,112 @@ def aoc(obj, fpname):
         else:
             common(o, fpname+'/'+innername)
 
-def monobehaviour(obj, fpname):
+
+def monobehaviour(obj, fpname, asset_path, noext):
+    global queue
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.monobehaviour'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
-    f.write('%s\r\n--------------------\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
 
-    #stop = basename.rfind('/')
-    #lendst = len(DST)
-    #subdirname = basename[lendst:stop+1]
-    #subdirname = PREFIX.strip('/')+'/' \
-    #                +subdirname.strip('/') + '/'
-    #subdirname = basename+'.mb/'
-    #am = data.assets_manager
-    #for i in am.assets.values():
-    #    for o in i.objects.values():
-    #        if o.type == 'MonoBehaviour':
-    #            continue
-    #        name = o.read().name
-    #        path = str(o.path_id)
-    #        if name:
-    #            name = name.replace('/','_')
-    #            export_obj(o, subdirname+name, subbundle=True)
-    #        else:
-    #            export_obj(o, subdirname+path, subbundle=True)
+    tt = data.read_type_tree()
+    mono_content_ids = {}
+    read_tree(tt, mono_content_ids)
+    dname = os.path.dirname(asset_path)
+    fname = os.path.basename(asset_path)
+    for i in mono_content_ids:
+        if i in queue:
+            obj = queue[i]
+            if obj:
+                export_obj(obj, '_/%s'%obj.path_id, noext=True )
 
 
-def monoscript(obj, fpname):
+def monoscript(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.monoscript'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w')
-    f.write('%s\r\n====================\r\n'%obj.path_id)
-    f.write('%s\r\n--------------------\r\n'%data.path_id)
+    f.write('====================\r\n%s\r\n'%obj.path_id)
+    f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
 
-def textasset(obj, fpname):
+def textasset(obj, fpname, asset_path, noext):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.textasset'
     fpname = basename + ext
+    count = 0
     while os.path.exists(fpname):
-        basename += '.1'
-        fpname = basename + ext
+        fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'wb')
     f.write(data.script)
     f.close()
 
-def sprite(obj, fpname):
+def sprite(obj, fpname, asset_path, noext):
     global CLEAN
     data = obj.read()
-    basename, extension = os.path.splitext(fpname)
-    fpname = basename+'.png'
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.png'
+    fpname = basename+ext
+    count = 0
     while os.path.exists(fpname):
         if not CLEAN:
             return
-        basename += '.1'
-        fpname = basename+'.png'
-    data.image.save(fpname)
-
-def texture2d(obj, fpname):
-    global CLEAN
-    data = obj.read()
-    basename, extension = os.path.splitext(fpname)
-    fpname = basename+'.png'
-    while os.path.exists(fpname):
-        if not CLEAN:
-            return
-        basename += '.1'
-        fpname = basename+'.png'
-    try:
+        fpname = basename+'.%d'%count + ext
+        count += 1
+    if ext == '':
+        data.image.save(fpname,'png')
+    else:
         data.image.save(fpname)
+
+def texture2d(obj, fpname, asset_path, noext):
+    global CLEAN
+    data = obj.read()
+    basename, ext = os.path.splitext(fpname)
+    if noext:
+        ext = ''
+    elif not ext:
+        ext = '.png'
+    fpname = basename+ext
+    count = 0
+    while os.path.exists(fpname):
+        if not CLEAN:
+            return
+        fpname = basename+'.%d'%count + ext
+        count += 1
+    try:
+        if ext == '':
+            data.image.save(fpname,'png')
+        else:
+            data.image.save(fpname)
     except EOFError:
         pass
 
@@ -315,12 +389,16 @@ def main():
         print(root)
         for f in files:
             src = os.path.realpath(os.path.join(root, f))
-            _do(src)
+            read_orig_file(src)
 
     ct = os.path.join(DST, 'containers.txt')
-    f_containers = open(ct, 'w')
-    f_containers.write(g_containers)
-    f_containers.close()
+    f = open(ct, 'w')
+    f.write(g_containers)
+    f.close()
+    ct = os.path.join(DST, 'nocontainers.txt')
+    f = open(ct, 'w')
+    f.write(g_nocontainers)
+    f.close()
 
 
 if __name__ == '__main__':

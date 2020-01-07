@@ -1,6 +1,6 @@
 # config ######################################################################
 OUTDIR = 'out_img'
-INDIR = 'out/y'
+INDIR = 'out/x'
 IGNORE = 'assets/_gluuonresources/'
 LOOSE = False
 CLEAN = True
