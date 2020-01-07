@@ -153,10 +153,12 @@ def export_obj(obj, asset_path, filter=True, dup=False, noext=False):
         common(obj, fpname, asset_path, noext)
 
 # ------------------------------------------
-def common(obj, fpname, asset_path, noext):
+def common(obj, fpname, asset_path, noext=None):
     data = obj.read()
     basename, ext = os.path.splitext(fpname)
-    if not ext:
+    if noext:
+        ext = ''
+    elif not ext:
         ext = '.txt'
     fpname = basename + ext
     count = 0
@@ -166,6 +168,7 @@ def common(obj, fpname, asset_path, noext):
     f = open(fpname, 'w')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
+    f.write('\r\n')
     f.close()
 
 
@@ -203,7 +206,10 @@ def material(obj, fpname, asset_path, noext):
         ext = '.mat'
     data = obj.read()
     f = open(fpname,'w')
+    f.write('====================\r\n%s\r\n'%obj.path_id)
+    f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
+    f.write('\r\n')
     tts = data.m_SavedProperties.m_TexEnvs
     tt = data.read_type_tree()
     mat = {}
@@ -234,13 +240,13 @@ def aoc(obj, fpname, asset_path, noext):
             innername = str(o.path_id)
 
         if o.type == 'AnimatorOverrideController':
-            common(o, fpname+'/'+innername)
+            common(o, fpname+'/'+innername, asset_path)
         elif o.type == 'AnimationClip':
-            common(o, fpname+'/'+innername+'.anim')
+            common(o, fpname+'/'+innername+'.anim', asset_path)
         elif o.type == 'AssetBundle':
             continue
         else:
-            common(o, fpname+'/'+innername)
+            common(o, fpname+'/'+innername, asset_path)
 
 
 def monobehaviour(obj, fpname, asset_path, noext):
@@ -257,6 +263,8 @@ def monobehaviour(obj, fpname, asset_path, noext):
         fpname = basename+'.%d'%count + ext
         count += 1
     f = open(fpname, 'w')
+    f.write('====================\r\n%s\r\n'%obj.path_id)
+    f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
     f.write('\r\n')
     f.close()
@@ -305,7 +313,10 @@ def textasset(obj, fpname, asset_path, noext):
         fpname = basename+'.%d'%count + ext
         count += 1
     f = open(fpname, 'wb')
+    f.write(('====================\r\n%s\r\n'%obj.path_id).encode())
+    f.write(('--------------------\r\n%s\r\n'%data.path_id).encode())
     f.write(data.script)
+    f.write('\r\n'.encode())
     f.close()
 
 def sprite(obj, fpname, asset_path, noext):
@@ -345,7 +356,7 @@ def texture2d(obj, fpname, asset_path, noext):
         count += 1
     try:
         if ext == '':
-            data.image.save(fpname,'png')
+            data.image.save(fpname, 'png')
         else:
             data.image.save(fpname)
     except EOFError:

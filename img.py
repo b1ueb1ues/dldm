@@ -10,6 +10,8 @@ x.RENAME = True
 x.main()
 
 c.INDIR = x.DST
-c.OUDIR = 'out/img_combined'
-#c.LOOSE = True
+c.OUTDIR = 'out/img_combined'
+#c.LOOSE = True #save all pictures in one base dir, use filename to represent path
+#c.CLEAN = True # clean output dir before combine
+#c.RENAME = True # append output dir with number when path exists
 c.main()

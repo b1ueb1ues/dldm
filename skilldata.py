@@ -76,18 +76,24 @@ def playeraction(fname):
 
 sa = {}
 sae = {}
+ssp = {}
 def skilldata():
     global SKILLDATA
-    global sa, sae
+    global sa, sae, ssp
     data = open(SKILLDATA).read()
-    sdes = re.findall(r'SkillDataElement data.*?\n.*?\[\d*\]\n', data, re.DOTALL)
+    sdes = re.findall(r'SkillDataElement data.*?\n.*?_ZoomWaitTime', data, re.DOTALL)
     for sde in sdes:
         sid = re.findall(r'int _Id = (\d+)\n', sde)
         aid = re.findall(r'int _ActionId1 = (\d+)\n', sde)
         trans = re.findall(r'int _TransSkill = (\d+)\n', sde)
+        sp = re.findall(r'int _Sp = (\d+)\n', sde)[0]
+        sp2 = re.findall(r'int _SpLv2 = (\d+)\n', sde)[0]
         sid = int(sid[0])
+        if sid == 0:
+            continue
         aid = int(aid[0])
         trans = int(trans[0])
+        ssp[sid] = (sp, sp2)
         sa[sid] = [aid, trans]
     for i in sa:
         aid = sa[i]
@@ -126,7 +132,7 @@ def anim(fname):
     global labelframe, labelid, acframe
     data = open(fname).read()
     if 'AnimationClip Base' in data:
-        pid = re.findall(r'(.*)\n===', data)[0]
+        pid = re.findall(r'===\n(.*)\n', data)[0]
         name = re.findall(r'name = "(.*)"', data)[0]
         time = re.findall(r'm_StopTime = (.*)', data)[0]
         duration = float(time)
@@ -135,7 +141,7 @@ def anim(fname):
         labelid[name] = pid
         acframe[pid] = frame
     elif 'AnimatorOverrideController Base' in data:
-        pid = re.findall(r'(.*)\n===', data)[0]
+        pid = re.findall(r'===\n(.*)\n', data)[0]
         name = re.findall(r'string name = "(.*)"\n', data)[0]
         acos = re.findall(r'AnimationClipOverride data.*?m_OriginalClip.*?m_OverrideClip.*?m_PathID = [0-9\-]+', data, re.DOTALL)
         override[name] = {}
@@ -178,6 +184,10 @@ def main():
             continue
         aid1 = sae[int(cid+'1')]
         aid2 = sae[int(cid+'2')]
+        s1sp = ssp[int(cid+'1')][0]
+        s2sp = ssp[int(cid+'2')][0]
+        s1sp2 = ssp[int(cid+'1')][1]
+        s2sp2 = ssp[int(cid+'2')][1]
         aido = {}
         for i in range(3, 10):
             sid = int(cid+str(i))
@@ -227,6 +237,7 @@ def main():
                 timing += '%.4f, '%(float(j))
             timing += '| '
         print('"%s","%s","%s"'%(name, f1, f2),
+                ',"%s(%s) %s(%s)"'%(s1sp, s1sp2, s2sp, s2sp2),
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
                 ',"%s | %s","%s","%s","%s"'%(c1, c2, co, fo, timing) 
                 )
@@ -336,5 +347,6 @@ def _do(cid, aid):
 
 
 if __name__ == "__main__":
+    print('-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-')
     main()
 

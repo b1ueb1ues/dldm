@@ -1,20 +1,60 @@
 # config ######################################################################
-OUTDIR = 'out_img'
-INDIR = 'out/x'
+OUTDIR = 'out/img_combined'
+INDIR = 'out/img'
 IGNORE = 'assets/_gluuonresources/'
 LOOSE = False
-CLEAN = True
+CLEAN = False
+RENAME = True
 
 DEBUG = 0
+if DEBUG:
+    INDIR = 'out/img.0/resources/platinumlegendopeningsetting'
+DBG_SRCROOT = 'out/img.0'
+DBG_IDFILE = 'out/img.0/_/%s'
+DBG_CONTAINERS = 'out/img.0/containers.txt'
 ###############################################################################
 import os
 import re
 from PIL import Image
 
 
-def dprint(*args, **kwargs):
-    if DEBUG:
+if DEBUG:
+    def dprint(*args, **kwargs):
         print(*args, **kwargs)
+else:
+    def dprint(*args, **kwargs):
+        return
+
+def _dst(fname):
+    global DST, inprefix
+    if LOOSE:
+        dst = os.path.join(DST, fname[inprefix:].replace('/','_'))
+        return dst
+    else:
+        dst = os.path.join(DST, fname[inprefix:])
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        return dst
+
+if DEBUG:
+    def _src(pid):
+        global SRC, containers, idfile
+        if pid in containers:
+            fname, atype = containers[pid]
+            return os.path.join(DBG_SRCROOT, fname)
+        src = DBG_IDFILE%pid
+        if os.path.exists(src):
+            return src
+        return None
+else:
+    def _src(pid):
+        global SRC, containers, idfile
+        if pid in containers:
+            fname, atype = containers[pid]
+            return os.path.join(SRC, fname)
+        src = idfile%pid
+        if os.path.exists(src):
+            return src
+        return None
 
 def _alpha(m, a): 
     if type(m) == str:
@@ -44,31 +84,26 @@ def _yuv(y, cb, cr, a=None): # params: filename
         merged = _alpha(merged, a)
     return merged
 
-def _dst(fname):
-    global DST, inprefix
-    if LOOSE:
-        dst = os.path.join(DST, fname[inprefix:].replace('/','_'))
-        return dst
-    else:
-        dst = os.path.join(DST, fname[inprefix:])
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        return dst
-
-def _src(pid):
-    global SRC, containers
-    if pid in containers:
-        fname, atype = containers[pid]
-        return os.path.join(SRC, fname)
-    if DEBUG:
-        src = 'out/y/_/%s'%pid
-    else:
-        src = os.path.join(SRC, '_/%s'%pid )
-    if os.path.exists(src):
-        return src
-    return None
-
-
 def _png(fname):
+    base, ext = os.path.splitext(fname)
+    if '_alphaa8' in base:
+        m = fname.replace('_alphaa8', '')
+        if os.path.exists(m):
+            c = _alpha(m, fname)
+            c.save(_dst(fname))
+            return
+    elif '_alpha' in base:
+        m = fname.replace('_alpha', '')
+        if os.path.exists(m):
+            c = _alpha(m, fname)
+            c.save(_dst(fname))
+            return
+    aname = base+'_alphaa8'+ext 
+    if os.path.exists(aname):
+        return
+    aname = base+'_alpha'+ext 
+    if os.path.exists(aname):
+        return
     fr = open(fname, 'rb')
     fw = open(_dst(fname), 'wb')
     fw.write(fr.read())
@@ -98,7 +133,6 @@ def _mat(fname, outname=None):
     cr = re.findall(r'first = "_TexCr".*?m_PathID = (.*?)\n', data, re.DOTALL)
     ta = re.findall(r'first = "_TexA".*?m_PathID = (.*?)\n', data, re.DOTALL)
 
-
     if len(m)>=2 or len(a)>=2 or len(ma)>=2 \
             or len(y)>=2 or len(cb)>=2 or len(cr)>=2 or len(ta)>=2:
         raise
@@ -122,7 +156,6 @@ def _mat(fname, outname=None):
             ta = _src(ta[0])
         else:
             ta = None
-
 
     if isma:
         #output ma
@@ -208,11 +241,11 @@ def _asset(fname):
             asset_save(c, fname, name+'_'+i, 'yuv')
 
     mat = re.findall(r'PPtr<\$Material>.*\n.*\n.*m_PathID = (.*)\n', data)
+    count = 0
     if len(mat)>0:
         for i in mat:
             if i != '0':
-                _mat(_src(i), fname+'.mat/'+i)
-
+                _mat(_src(i), fname+'/%d.mat'+i)
 
 def clean(dst):
     os.system('rm -r %s'%dst)
@@ -220,7 +253,7 @@ def clean(dst):
 def main():
     global INDIR, IGNORE, inprefix
     global ROOT, SRC, DST
-    global containers
+    global containers, idfile
     ROOT = os.path.dirname(os.path.realpath(__file__))
     SRC = INDIR
     DST = os.path.join(ROOT, OUTDIR)
@@ -231,15 +264,24 @@ def main():
     ignore = len(IGNORE)-1
 
     if DEBUG:
-        c = 'out/y/containers.txt'
+        c = DBG_CONTAINERS
     else:
         c = os.path.join(SRC, 'containers.txt')
     for i in open(c):
         _id, path, _type = i.split(',')
         containers[_id.strip()] = (path.strip()[ignore:], _type)
 
+    idfile = os.path.join(SRC, '_') + '/%s'
+
     if CLEAN:
         clean(DST)
+    if RENAME:
+        count = 0
+        base = DST
+        while os.path.exists(DST):
+            DST = base + '.%d'%count
+            count += 1
+
     os.makedirs(DST, exist_ok=True)
 
     # start walk
