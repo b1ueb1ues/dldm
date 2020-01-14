@@ -2,7 +2,7 @@
 OUTDIR = 'out/img_combined'
 INDIR = 'out/img'
 IGNORE = 'assets/_gluuonresources/'
-LOOSE = False
+LOOSE = 2
 CLEAN = False
 RENAME = True
 
@@ -27,7 +27,12 @@ else:
 
 def _dst(fname):
     global DST, inprefix
-    if LOOSE:
+    if LOOSE == 2:
+        d, b = os.path.split(fname)
+        dst = os.path.join(DST, d[inprefix:].replace('/','.')+'/'+b)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        return dst
+    elif LOOSE:
         dst = os.path.join(DST, fname[inprefix:].replace('/','_'))
         return dst
     else:
