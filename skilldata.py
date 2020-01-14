@@ -16,6 +16,7 @@ PLAYERACTIONHITATTRIBUTE = PREFIX+'/resources/master/playeractionhitattribute.as
 ###############################################################################
 import os
 import re
+from block import *
 
 
 hitda = {}
@@ -39,7 +40,10 @@ def playeraction(fname):
         aid = int(aid[0])
     else:
         return
-    data = open(fname).read()
+    f = open(fname)
+    data = f.read()
+    f.seek(0);
+    lines = f.readlines()
     pmds = re.findall(r'PartsMotionData _data\n.*?\n\n', data, re.DOTALL)
     label = []
     for i in pmds:
@@ -61,8 +65,15 @@ def playeraction(fname):
     #hd = re.findall(r'string _hitLabel = "(.*?)"', data, re.DOTALL)
     #hd += re.findall(r'string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
     #aidhit[aid] = hd
-    hd = re.findall(r'float _seconds = ([0-9\.]*)\n.{,240}string _hitLabel = "(.*?)"', data, re.DOTALL)
-    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.{,240}string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
+    hd = []
+    for blockdata in findblock(lines, 'HitData'):
+        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitLabel = "(.*?)"', blockdata, re.DOTALL)
+    for blockdata in findblock(lines, 'FireStockBulletData'):
+        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
+    for blockdata in findblock(lines, 'BulletData'):
+        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
+    for blockdata in findblock(lines, 'ArrangeBulletData'):
+        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _abHitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
     aidhit[aid] = []
     aidhittiming[aid] = []
     for i in hd:
