@@ -22,7 +22,7 @@ from block import *
 hitda = {}
 def playeractionhitattribute():
     global hitda
-    data = open(PLAYERACTIONHITATTRIBUTE).read()
+    data = open(PLAYERACTIONHITATTRIBUTE, encoding='utf8').read()
     idda = re.findall(r'string _Id = "(.*?)".*?float _DamageAdjustment = (.*?)\n', data, re.DOTALL)
     for i in idda:
         if i[0] and i[0] != '':
@@ -40,7 +40,7 @@ def playeraction(fname):
         aid = int(aid[0])
     else:
         return
-    f = open(fname)
+    f = open(fname, encoding='utf8')
     data = f.read()
     f.seek(0);
     lines = f.readlines()
@@ -91,7 +91,7 @@ ssp = {}
 def skilldata():
     global SKILLDATA
     global sa, sae, ssp
-    data = open(SKILLDATA).read()
+    data = open(SKILLDATA, encoding='utf8').read()
     sdes = re.findall(r'SkillDataElement data.*?\n.*?_ZoomWaitTime', data, re.DOTALL)
     for sde in sdes:
         sid = re.findall(r'int _Id = (\d+)\n', sde)
@@ -119,7 +119,7 @@ idcomment = {}
 idid = {}
 def textlabel():
     global idchara, idcomment, idid
-    data = open(TEXTLABEL).read()
+    data = open(TEXTLABEL, encoding='utf8').read()
     tmp = re.findall(r'CHARA_NAME_(\d+)"\n.*_Text = "(.*)"', data)
     for i in tmp:
         idname[i[0]] = i[1]
@@ -127,7 +127,7 @@ def textlabel():
     for i in tmp:
         idcomment[i[0]] = i[1]
         idname[i[0]] = i[1]
-    data = open(CHARADATA).read()
+    data = open(CHARADATA, encoding='utf8').read()
     cdes = re.findall(r'CharaDataElement data.*?\n.*?\[\d*\]\n', data, re.DOTALL)
     for i in cdes:
         cid = re.findall(r'int _Id = (\d+)\n', i)[0]
@@ -141,7 +141,7 @@ acframe = {}
 override = {}
 def anim(fname):
     global labelframe, labelid, acframe
-    data = open(fname).read()
+    data = open(fname, encoding='utf8').read()
     if 'AnimationClip Base' in data:
         pid = re.findall(r'===\n(.*)\n', data)[0]
         name = re.findall(r'name = "(.*)"', data)[0]

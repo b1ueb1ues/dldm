@@ -165,7 +165,7 @@ def common(obj, fpname, asset_path, noext=None):
     while os.path.exists(fpname):
         fpname = basename+'.%d'%count + ext
         count += 1
-    f = open(fpname, 'w')
+    f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
     f.write('\r\n')
@@ -184,7 +184,7 @@ def gameobject(obj, fpname, asset_path, noext):
     while os.path.exists(fpname):
         fpname = basename+'.%d'%count + ext
         count += 1
-    f = open(fpname, 'w')
+    f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(go.dump())
     cs = go.components
@@ -205,7 +205,7 @@ def material(obj, fpname, asset_path, noext):
     elif not ext:
         ext = '.mat'
     data = obj.read()
-    f = open(fpname,'w')
+    f = open(fpname,'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
@@ -262,7 +262,7 @@ def monobehaviour(obj, fpname, asset_path, noext):
     while os.path.exists(fpname):
         fpname = basename+'.%d'%count + ext
         count += 1
-    f = open(fpname, 'w')
+    f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
@@ -293,7 +293,7 @@ def monoscript(obj, fpname, asset_path, noext):
     while os.path.exists(fpname):
         fpname = basename+'.%d'%count + ext
         count += 1
-    f = open(fpname, 'w')
+    f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
     f.write(data.dump())
@@ -313,9 +313,10 @@ def textasset(obj, fpname, asset_path, noext):
         fpname = basename+'.%d'%count + ext
         count += 1
     f = open(fpname, 'wb')
-    f.write(('====================\r\n%s\r\n'%obj.path_id).encode())
-    f.write(('--------------------\r\n%s\r\n'%data.path_id).encode())
-    f.write(data.script)
+    line = '====================\r\n%s\r\n'%obj.path_id
+    line += '--------------------\r\n%s\r\n'%data.path_id
+    f.write(line.encode());
+    f.write(data.script);
     f.write('\r\n'.encode())
     f.close()
 
@@ -403,11 +404,11 @@ def main():
             read_orig_file(src)
 
     ct = os.path.join(DST, 'containers.txt')
-    f = open(ct, 'w')
+    f = open(ct, 'w', encoding='utf8')
     f.write(g_containers)
     f.close()
     ct = os.path.join(DST, 'nocontainers.txt')
-    f = open(ct, 'w')
+    f = open(ct, 'w', encoding='utf8')
     f.write(g_nocontainers)
     f.close()
 
