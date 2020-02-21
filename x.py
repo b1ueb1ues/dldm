@@ -7,7 +7,7 @@ OUTDIR = 'out/x'
 #PREFIX = 'assets/_gluonresources/resources/'
 PREFIX = 'assets/_gluonresources/'
 ALLID = False
-CLEAN = True
+CLEAN = False
 RENAME = True
 
 DEBUG = 0
