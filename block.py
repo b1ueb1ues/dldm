@@ -15,6 +15,8 @@ def findsameblock(f, blockname):
                 prefix = line[:loc]
         elif status == 1:
             if len(line)>loc and line[loc-1] in ['\t', ' ']:
+                if line[-1] != '\n':
+                    line += '\n'
                 oneblock += line
             else:
                 ret.append(oneblock)
@@ -39,6 +41,8 @@ def findblock(f, blockname):
                 prefix = line[:loc]
         elif status == 1:
             if len(line)>loc and line[loc] in ['\t', ' ']:
+                if line[-1] != '\n':
+                    line += '\n'
                 oneblock += line
             else:
                 ret.append(oneblock)

@@ -1,4 +1,9 @@
 import sys, os
+from block import *
+import re
+
+INDIR = 'out/all.0/resources/aiscript'
+INFILE = 'out/bos_drg_21000401_03.asset'
 
 command = {
 'Def':0                   ,
@@ -59,7 +64,10 @@ def dr(d):
 r_command = dr(command)
 r_compare = dr(compare)
 
-def main(fin, fout):
+
+def p1(fin, basename):
+    fout = open(basename+'.1', 'w')
+    tmp = 0
     for line in fin:
         idx = line.find('_command = ')
         if idx != -1:
@@ -69,82 +77,76 @@ def main(fin, fout):
         if idx != -1:
             compareno = line[idx+10:-1]
             line = line.replace(compareno, r_compare[int(compareno)]);
+        if tmp :
+            line = line[:-1] + ' ' + tmp
+            tmp = 0
+        else:
+            idx = line.find('[')
+            if idx != -1:
+                if line[idx-1] in [' ', '\t']:
+                    tmp = line[idx:]
+
         fout.write(line);
+    fout.close()
+    return basename+'.1'
+
+def p2(fin, basename):
+    fout = open(basename+'.2', 'w')
+    lines = fin.readlines()
+    b = findblock(lines, 'AIScriptContainer data')
+    pref = ''
+    for i in b:
+        idx = int(i[i.find('[')+1:i.find(']')])
+        cmd = re.findall(r'int _command = (.*)\n', i)[0]
+        jmp = int(re.findall(r'int _jumpStep = (.*)\n', i)[0])
+        cpr = re.findall(r'int compare = (.*)\n', i)
+        if cpr == []:
+            cpr = 'none'
+        else:
+            cpr = cpr[0]
+        params = findblock(i.split('\n'), 'AIScriptParam data')
+        if cmd in ['ElseIF', 'Else', 'EndIf', 'EndDef']:
+            pref = pref[:-4]
+        #line = '%d: %s%s'%(idx, pref, cmd)
+        line = '%s%s'%(pref, cmd)
+        if cmd in ['If', 'Def', 'ElseIF', 'Else']:
+            pref += '    '
+        for p in params:
+            valuedata = findblock(p.split('\n'), 'AIScriptValue data');
+            for vd in valuedata:
+                vtype = int(re.findall(r'int valType = (.*)\n', vd)[0])
+                if vtype == 0:
+                    v = re.findall(r'string valString = "(.*)"\n', vd)[0]
+                    v = '<%s>'%v
+                elif vtype == 1:
+                    v = re.findall(r'int valInt = (.*)\n', vd)[0]
+                elif vtype == 2:
+                    v = re.findall(r'float valFloat = (.*)\n', vd)[0]
+                line += ' ' + v
+        if cpr != 'none':
+            line += ' ' + cpr
+        if jmp != 1:
+            line += ' [+%d]'%jmp
+        fout.write(line+'\n')
+    fout.close()
+    return basename+'.2'
+
+def main(basename):
+    fname = basename
+    fname = p1(open(fname), basename)
+    fname = p2(open(fname), basename)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        with os.scandir('.') as it:
+    if INFILE :
+        main(INFILE)
+    elif len(sys.argv) == 1 :
+        with os.scandir(INDIR) as it:
             for entry in it:
                 if not entry.name.startswith('.') and entry.is_file():
                     if entry.name[-6:] == '.asset':
-                        fin = open(entry.name);
-                        fout = open(entry.name+'.1', 'w')
-                        main(fin, fout)
+                        main(entry.name)
     else:
-        fin = open(sys.argv[1])
-        fout = open(sys.argv[1]+'.1', 'w')
-        main(fin, fout)
+        main(sys.argv[1])
 
-
-
-#// Namespace: 
-#public enum eMoveAction // TypeDefIndex: 8939
-#{
-#	// Fields
-#	public int value__; // 0x10
-#	public const eMoveAction none = 0; // 0x0
-#	public const eMoveAction approch = 1; // 0x0
-#	public const eMoveAction escape = 2; // 0x0
-#	public const eMoveAction escapeTL = 3; // 0x0
-#	public const eMoveAction pivot = 4; // 0x0
-#	public const eMoveAction anchor = 5; // 0x0
-#}
-#
-#// Namespace: 
-#public enum eTurnAction // TypeDefIndex: 8940
-#{
-#	// Fields
-#	public int value__; // 0x10
-#	public const eTurnAction none = 0; // 0x0
-#	public const eTurnAction target = 1; // 0x0
-#	public const eTurnAction warldCenter = 2; // 0x0
-#	public const eTurnAction north = 3; // 0x0
-#	public const eTurnAction east = 4; // 0x0
-#	public const eTurnAction south = 5; // 0x0
-#	public const eTurnAction west = 6; // 0x0
-#	public const eTurnAction pivot = 7; // 0x0
-#	public const eTurnAction anchor = 8; // 0x0
-#}
-#public enum eTargetType // TypeDefIndex: 8941
-#{
-#	// Fields
-#	public int value__; // 0x10
-#	public const eTargetType ally = 0; // 0x0
-#	public const eTargetType hostile = 1; // 0x0
-#	public const eTargetType allyChild = 2; // 0x0
-#	public const eTargetType minion = 3; // 0x0
-#	public const eTargetType gm_turn = 4; // 0x0
-#}
-#public enum eCtrlState // TypeDefIndex: 9156
-#{
-#	// Fields
-#	public int value__; // 0x10
-#	public const eCtrlState none = 0; // 0x0
-#	public const eCtrlState standby = 1; // 0x0
-#	public const eCtrlState battle = 2; // 0x0
-#	public const eCtrlState goHome = 3; // 0x0
-#	public const eCtrlState route = 4; // 0x0
-#}
-#
-#// Namespace: 
-#private enum eActionState // TypeDefIndex: 9157
-#{
-#	// Fields
-#	public int value__; // 0x10
-#	public const eActionState none = 0; // 0x0
-#	public const eActionState move = 1; // 0x0
-#	public const eActionState rotate = 2; // 0x0
-#	public const eActionState action = 3; // 0x0
-#}
 
 
