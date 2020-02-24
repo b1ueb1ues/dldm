@@ -2,8 +2,10 @@ import sys, os
 from block import *
 import re
 
+OUTDIR = 'out/aiscript'
 INDIR = 'out/all.0/resources/aiscript'
-INFILE = 'out/bos_drg_21000401_03.asset'
+R = True
+#INFILE = 'out/bos_drg_21000401_03.asset'
 
 command = {
 'Def':0                   ,
@@ -66,7 +68,7 @@ r_compare = dr(compare)
 
 
 def p1(fin, basename):
-    fout = open(basename+'.1', 'w')
+    ret = []
     tmp = 0
     for line in fin:
         idx = line.find('_command = ')
@@ -86,13 +88,16 @@ def p1(fin, basename):
                 if line[idx-1] in [' ', '\t']:
                     tmp = line[idx:]
 
-        fout.write(line);
-    fout.close()
-    return basename+'.1'
+        ret.append(line);
+    return ret
 
 def p2(fin, basename):
-    fout = open(basename+'.2', 'w')
-    lines = fin.readlines()
+    #fout = open(basename+'.2', 'w')
+    fout = os.path.join(OUTDIR, os.path.basename(os.path.splitext(basename)[0]+'.aiscript'))
+    if not os.path.exists(os.path.dirname(fout)):
+        os.makedirs(fout, exist_ok=True)
+    fout = open(fout, 'w')
+    lines = fin
     b = findblock(lines, 'AIScriptContainer data')
     pref = ''
     for i in b:
@@ -129,22 +134,35 @@ def p2(fin, basename):
             line += ' [+%d]'%jmp
         fout.write(line+'\n')
     fout.close()
-    return basename+'.2'
+    return
 
 def main(basename):
-    fname = basename
-    fname = p1(open(fname), basename)
-    fname = p2(open(fname), basename)
+    tmp = p1(open(basename), basename)
+    p2(tmp, basename)
+
 
 if __name__ == '__main__':
-    if INFILE :
+    for i in ['INFILE', 'R']:
+        if i not in globals():
+            globals()[i] = 0
+
+    if OUTDIR:
+        if not os.path.exists(OUTDIR):
+            os.makedir(OUTDIR)
+    if INFILE:
         main(INFILE)
-    elif len(sys.argv) == 1 :
-        with os.scandir(INDIR) as it:
-            for entry in it:
-                if not entry.name.startswith('.') and entry.is_file():
-                    if entry.name[-6:] == '.asset':
-                        main(entry.name)
+    elif len(sys.argv) == 1 : # no args
+        if R:
+            for root, dirs, files in os.walk(INDIR):
+                for f in files:
+                    if os.path.splitext(f)[1] == '.asset':
+                        main(os.path.join(root, f))
+        else:
+            with os.scandir(INDIR) as it:
+                for entry in it:
+                    if not entry.name.startswith('.') and entry.is_file():
+                        if entry.name[-6:] == '.asset':
+                            main(entry.name)
     else:
         main(sys.argv[1])
 
