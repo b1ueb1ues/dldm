@@ -118,19 +118,25 @@ def p2(fin, basename):
         if cmd in ['If', 'Def', 'ElseIF', 'Else']:
             pref += '    '
         for p in params:
-            valuedata = findblock(p.split('\n'), 'AIScriptValue data');
-            for vd in valuedata:
-                vtype = int(re.findall(r'int valType = (.*)\n', vd)[0])
-                if vtype == 0:
-                    v = re.findall(r'string valString = "(.*)"\n', vd)[0]
-                    v = '<%s>'%v
-                elif vtype == 1:
-                    v = re.findall(r'int valInt = (.*)\n', vd)[0]
-                elif vtype == 2:
-                    v = re.findall(r'float valFloat = (.*)\n', vd)[0]
-                line += ' ' + v
-        if cpr != 'none':
-            line += ' ' + cpr
+            columndata = findblock(p.split('\n'), 'Column data')
+            col = 0;
+            for c in columndata:
+                if col != 0:
+                    line += ', '
+                col += 1
+                valuedata = findblock(c.split('\n'), 'AIScriptValue data')
+                for vd in valuedata:
+                    vtype = int(re.findall(r'int valType = (.*)\n', vd)[0])
+                    if vtype == 0:
+                        v = re.findall(r'string valString = "(.*)"\n', vd)[0]
+                        v = '<%s>'%v
+                    elif vtype == 1:
+                        v = re.findall(r'int valInt = (.*)\n', vd)[0]
+                    elif vtype == 2:
+                        v = re.findall(r'float valFloat = (.*)\n', vd)[0]
+                    line += ' ' + v
+                if cpr != 'none':
+                    line += ' ' + cpr
         if jmp != 1:
             line += ' [+%d]'%jmp
         fout.write(line+'\n')
