@@ -93,9 +93,10 @@ def p1(fin, basename):
 
 def p2(fin, basename):
     #fout = open(basename+'.2', 'w')
-    fout = os.path.join(OUTDIR, os.path.basename(os.path.splitext(basename)[0]+'.aiscript'))
+    fout = os.path.join(OUTDIR, os.path.splitext(basename)[0]+'.aiscript')
+    fout = fout.replace(INDIR, '')
     if not os.path.exists(os.path.dirname(fout)):
-        os.makedirs(fout, exist_ok=True)
+        os.makedirs(os.path.dirname(fout), exist_ok=True)
     fout = open(fout, 'w')
     lines = fin
     b = findblock(lines, 'AIScriptContainer data')
@@ -148,7 +149,7 @@ if __name__ == '__main__':
 
     if OUTDIR:
         if not os.path.exists(OUTDIR):
-            os.makedir(OUTDIR)
+            os.makedirs(OUTDIR)
     if INFILE:
         main(INFILE)
     elif len(sys.argv) == 1 : # no args
