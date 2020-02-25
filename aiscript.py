@@ -3,8 +3,8 @@ from block import *
 import re
 
 OUTDIR = 'out/aiscript'
-INDIR = 'out/all.0/resources/aiscript'
-R = True
+INDIR = 'out/all/resources/aiscript'
+_R = True
 #INFILE = 'out/bos_drg_21000401_03.asset'
 
 
@@ -118,6 +118,36 @@ public enum eCompare // TypeDefIndex: 8946
 	public const eCompare small = 5; // 0x0
 	public const eCompare none = 6; // 0x0
 }
+
+// Namespace: 
+public enum eMoveAction // TypeDefIndex: 8939
+{
+	// Fields
+	public int value__; // 0x10
+	public const eMoveAction none = 0; // 0x0
+	public const eMoveAction approch = 1; // 0x0
+	public const eMoveAction escape = 2; // 0x0
+	public const eMoveAction escapeTL = 3; // 0x0
+	public const eMoveAction pivot = 4; // 0x0
+	public const eMoveAction anchor = 5; // 0x0
+}
+
+// Namespace: 
+public enum eTurnAction // TypeDefIndex: 8940
+{
+	// Fields
+	public int value__; // 0x10
+	public const eTurnAction none = 0; // 0x0
+	public const eTurnAction target = 1; // 0x0
+	public const eTurnAction warldCenter = 2; // 0x0
+	public const eTurnAction north = 3; // 0x0
+	public const eTurnAction east = 4; // 0x0
+	public const eTurnAction south = 5; // 0x0
+	public const eTurnAction west = 6; // 0x0
+	public const eTurnAction pivot = 7; // 0x0
+	public const eTurnAction anchor = 8; // 0x0
+}
+
 '''
 
 def dr(d):
@@ -130,6 +160,8 @@ def dr(d):
 
 command = dr('public const Command')
 compare = dr('public const eCompare')
+moveaction = dr('public const eMoveAction')
+turnaction = dr('public const eTurnAction')
 target = dr('public const ActionTarget')
 for i in command:
     if command[i] in ['If', 'ElseIF', 'Else', 'EndIf', 'Def', 'EndDef', 'Jump']:
@@ -140,9 +172,21 @@ r_compare = {
     'smallEqual'  : '<=',
     'repudiation' : '!=',
     'equal'       : '==',
-    'large'       : '>',
+    'large'       : '>' ,
     'small'       : '<'
 }
+
+# script If A 0 large means 0 > A
+# for python we usually use A > 0, so reverse the direction of comare
+rr_compare = {
+    'largeEqual'  : '<=',
+    'smallEqual'  : '>=',
+    'repudiation' : '!=',
+    'equal'       : '==',
+    'large'       : '>' ,
+    'small'       : '<'
+}
+
 
 def p1(fin, basename):
     ret = []
@@ -175,7 +219,7 @@ def asm(cmd, params, jmp, pref):
             line = '%selif'%pref
         for p in params:
             if len(p) == 3:
-                line += ' %s %s %s,'%(p[0], r_compare[p[2]], p[1])
+                line += ' %s %s %s,'%(p[0], rr_compare[p[2]], p[1])
             else:
                 for v in p:
                     line += ' ' + v
@@ -201,11 +245,6 @@ def asm(cmd, params, jmp, pref):
             else:
                 line += ', '
             line += p[0]
-    elif cmd == 'SetTarget':
-        line += '('
-        for p in params:
-            line += target[p[0]] + ', '
-        line = line[:-2] + ')'
     elif cmd == 'Add':
         if len(params) != 2:
             errrrrrrrrr()
@@ -220,6 +259,26 @@ def asm(cmd, params, jmp, pref):
         line = '%s%s *= %s'%(pref, params[0][0], params[1][0])
     elif cmd == 'jump':
         line = pref + '#jump +%d'%jmp
+    elif cmd == 'SetTarget':
+        line += '('
+        for p in params:
+            line += '"%s", '%target[p[0]]
+        line = line[:-2] + ')'
+    elif cmd == 'MoveAction':
+        line += '('
+        count = 0
+        for p in params:
+            if count == 0:
+                line += '"%s", '%moveaction[p[0]]
+                count += 1
+            else:
+                line += '%s, '%p[0]
+        line = line[:-2] + ')'
+    elif cmd == 'TurnAction':
+        line += '('
+        for p in params:
+            line += '"%s", '%turnaction[p[0]]
+        line = line[:-2] + ')'
     else:
         line += '('
         for p in params:
@@ -280,6 +339,7 @@ def p2(fin, basename):
     return
 
 def main(basename):
+    print(basename)
     tmp = p1(open(basename), basename)
     p2(tmp, basename)
 
@@ -295,18 +355,16 @@ if __name__ == '__main__':
     if INFILE:
         main(INFILE)
     elif len(sys.argv) == 1 : # no args
-        if R:
+        if _R:
             for root, dirs, files in os.walk(INDIR):
                 for f in files:
                     if os.path.splitext(f)[1] == '.asset':
-                        print(f)
                         main(os.path.join(root, f))
         else:
             with os.scandir(INDIR) as it:
                 for entry in it:
                     if not entry.name.startswith('.') and entry.is_file():
                         if entry.name[-6:] == '.asset':
-                            print(entry.name)
                             main(entry.name)
     else:
         main(sys.argv[1])
