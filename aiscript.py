@@ -184,11 +184,11 @@ def asm(cmd, params, jmp, pref):
     elif cmd == 'else':
         line += ':'
     elif cmd == 'endif':
-        line = None
+        line = pref+'#endif'
     elif cmd == 'def':
         line += ' ' + params[0][0] + '():'
     elif cmd == 'enddef':
-        line = ''
+        line = pref+'#enddef\n'
     elif cmd == 'Set':
         line = pref + params[0][0] + ' = '
         count = 0
@@ -219,7 +219,7 @@ def asm(cmd, params, jmp, pref):
             errrrrrrrrr()
         line = '%s%s *= %s'%(pref, params[0][0], params[1][0])
     elif cmd == 'jump':
-        line = pref + '# jump +%d'%jmp
+        line = pref + '#jump +%d'%jmp
     else:
         line += '('
         for p in params:
