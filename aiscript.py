@@ -7,65 +7,142 @@ INDIR = 'out/all.0/resources/aiscript'
 R = True
 #INFILE = 'out/bos_drg_21000401_03.asset'
 
-command = {
-'Def':0                   ,
-'EndDef':1                ,
-'If':2                    ,
-'Else':3                  ,
-'ElseIF':4                ,
-'EndIf':5                 ,
-'Set':6                   ,
-'Add':7                   ,
-'Sub':8                   ,
-'SetTarget':9             ,
-'EndScript':10            ,
-'Action':11               ,
-'Function':12             ,
-'MoveAction':13           ,
-'TurnAction':14           ,
-'Random':15               ,
-'RecTimer':16             ,
-'RecHpRate':17            ,
-'AliveNum':18             ,
-'Jump':19                 ,
-'Wake':20                 ,
-'ClearDmgCnt':21          ,
-'UnusualPosture':22       ,
-'FromActionSet':23        ,
-'GM_SetTurnEvent':24      ,
-'GM_CompleteTurnEvent':25 ,
-'GM_SetTurnMax':26        ,
-'GM_SetSuddenEvent':27    ,
-'GM_SetBanditEvent':28    ,
-'Mul':29                  ,
-'OrderCloser':30          ,
-'OrderAliveFather':31     ,
-'Reserve06':32            ,
-'Reserve07':33            ,
-'Reserve08':34            ,
-'Reserve09':35            ,
-'Reserve10':36
+
+src = '''
+// Namespace: 
+public enum Command // TypeDefIndex: 8938
+{
+	// Fields
+	public int value__; // 0x10
+	public const Command Def = 0; // 0x0
+	public const Command EndDef = 1; // 0x0
+	public const Command If = 2; // 0x0
+	public const Command Else = 3; // 0x0
+	public const Command ElseIF = 4; // 0x0
+	public const Command EndIf = 5; // 0x0
+	public const Command Set = 6; // 0x0
+	public const Command Add = 7; // 0x0
+	public const Command Sub = 8; // 0x0
+	public const Command SetTarget = 9; // 0x0
+	public const Command EndScript = 10; // 0x0
+	public const Command Action = 11; // 0x0
+	public const Command Function = 12; // 0x0
+	public const Command MoveAction = 13; // 0x0
+	public const Command TurnAction = 14; // 0x0
+	public const Command Random = 15; // 0x0
+	public const Command RecTimer = 16; // 0x0
+	public const Command RecHpRate = 17; // 0x0
+	public const Command AliveNum = 18; // 0x0
+	public const Command Jump = 19; // 0x0
+	public const Command Wake = 20; // 0x0
+	public const Command ClearDmgCnt = 21; // 0x0
+	public const Command UnusualPosture = 22; // 0x0
+	public const Command FromActionSet = 23; // 0x0
+	public const Command GM_SetTurnEvent = 24; // 0x0
+	public const Command GM_CompleteTurnEvent = 25; // 0x0
+	public const Command GM_SetTurnMax = 26; // 0x0
+	public const Command GM_SetSuddenEvent = 27; // 0x0
+	public const Command GM_SetBanditEvent = 28; // 0x0
+	public const Command Mul = 29; // 0x0
+	public const Command OrderCloser = 30; // 0x0
+	public const Command OrderAliveFather = 31; // 0x0
+	public const Command Reserve06 = 32; // 0x0
+	public const Command Reserve07 = 33; // 0x0
+	public const Command Reserve08 = 34; // 0x0
+	public const Command Reserve09 = 35; // 0x0
+	public const Command Reserve10 = 36; // 0x0
 }
 
-compare = {
-'largeEqual'  : 0 ,
-'smallEqual'  : 1 ,
-'repudiation' : 2 ,
-'equal'       : 3 ,
-'large'       : 4 ,
-'small'       : 5 ,
-'none'        : 6
+
+// Namespace: Gluon
+public enum ActionTarget // TypeDefIndex: 8512
+{
+	// Fields
+	public int value__; // 0x10
+	public const ActionTarget NONE = 0; // 0x0
+	public const ActionTarget MYSELF_00 = 1; // 0x0
+	public const ActionTarget ALLY_HP_02 = 4; // 0x0
+	public const ActionTarget ALLY_HP_03 = 5; // 0x0
+	public const ActionTarget ALLY_HP_04 = 6; // 0x0
+	public const ActionTarget ALLY_DISTANCE_00 = 7; // 0x0
+	public const ActionTarget ALLY_DISTANCE_01 = 8; // 0x0
+	public const ActionTarget ALLY_STRENGTH_00 = 9; // 0x0
+	public const ActionTarget ALLY_STRENGTH_01 = 10; // 0x0
+	public const ActionTarget ALLY_BUFF_00 = 11; // 0x0
+	public const ActionTarget ALLY_BUFF_01 = 12; // 0x0
+	public const ActionTarget ALLY_BUFF_04 = 15; // 0x0
+	public const ActionTarget HOSTILE_DISTANCE_00 = 16; // 0x0
+	public const ActionTarget HOSTILE_DISTANCE_01 = 17; // 0x0
+	public const ActionTarget HOSTILE_HP_00 = 18; // 0x0
+	public const ActionTarget HOSTILE_STRENGTH_00 = 19; // 0x0
+	public const ActionTarget HOSTILE_STRENGTH_01 = 20; // 0x0
+	public const ActionTarget HOSTILE_TARGET_00 = 21; // 0x0
+	public const ActionTarget HOSTILE_TARGET_01 = 22; // 0x0
+	public const ActionTarget HOSTILE_TARGET_02 = 23; // 0x0
+	public const ActionTarget HOSTILE_RANDOM_00 = 24; // 0x0
+	public const ActionTarget HOSTILE_FRONT_00 = 25; // 0x0
+	public const ActionTarget HOSTILE_BEHIND_00 = 26; // 0x0
+	public const ActionTarget ALL_DISTANCE_00 = 27; // 0x0
+	public const ActionTarget ALL_DISTANCE_01 = 28; // 0x0
+	public const ActionTarget ALL_RANDOM_00 = 29; // 0x0
+	public const ActionTarget PLAYER1_TARGET = 30; // 0x0
+	public const ActionTarget PLAYER2_TARGET = 31; // 0x0
+	public const ActionTarget PLAYER3_TARGET = 32; // 0x0
+	public const ActionTarget PLAYER4_TARGET = 33; // 0x0
+	public const ActionTarget PLAYER_RANDOM = 34; // 0x0
+	public const ActionTarget HOSTILE_SWOON = 35; // 0x0
+	public const ActionTarget HOSTILE_BIND = 36; // 0x0
+	public const ActionTarget PLAYER_RANDOM_INDIRECT = 37; // 0x0
+	public const ActionTarget PLAYER_RANDOM_DIRECT = 38; // 0x0
+	public const ActionTarget HOSTILE_OUT_MARKER_00 = 39; // 0x0
+	public const ActionTarget HOSTILE_OUT_MARKER_01 = 40; // 0x0
+	public const ActionTarget HOSTILE_OUT_MARKER_02 = 41; // 0x0
+	public const ActionTarget SPECIAL_HATE = 42; // 0x0
+	public const ActionTarget HOSTILE_DISTANCE_NO_LIMIT = 43; // 0x0
+	public const ActionTarget REGISTERED_01 = 44; // 0x0
+	public const ActionTarget REGISTERED_02 = 45; // 0x0
+	public const ActionTarget REGISTERED_03 = 46; // 0x0
+	public const ActionTarget REGISTERED_04 = 47; // 0x0
 }
+
+// Namespace: 
+public enum eCompare // TypeDefIndex: 8946
+{
+	// Fields
+	public int value__; // 0x10
+	public const eCompare largeEqual = 0; // 0x0
+	public const eCompare smallEqual = 1; // 0x0
+	public const eCompare repudiation = 2; // 0x0
+	public const eCompare equal = 3; // 0x0
+	public const eCompare large = 4; // 0x0
+	public const eCompare small = 5; // 0x0
+	public const eCompare none = 6; // 0x0
+}
+'''
 
 def dr(d):
     r = {}
-    for k,v in d.items():
-        r[v] = k
+    reg = d+r' (.*)=(.*);'
+    tmp = re.findall(reg, src)
+    for i in tmp:
+        r[i[1].strip()] = i[0].strip()
     return r
 
-r_command = dr(command)
-r_compare = dr(compare)
+command = dr('public const Command')
+compare = dr('public const eCompare')
+target = dr('public const ActionTarget')
+for i in command:
+    if command[i] in ['If', 'ElseIF', 'Else', 'EndIf', 'Def', 'EndDef', 'Jump']:
+        command[i] = command[i].lower()
 
+r_compare = {
+    'largeEqual'  : '>=',
+    'smallEqual'  : '<=',
+    'repudiation' : '!=',
+    'equal'       : '==',
+    'large'       : '>',
+    'small'       : '<'
+}
 
 def p1(fin, basename):
     ret = []
@@ -74,11 +151,11 @@ def p1(fin, basename):
         idx = line.find('_command = ')
         if idx != -1:
             cmdno = line[idx+11:-1]
-            line = line.replace(cmdno, r_command[int(cmdno)]);
+            line = line.replace(cmdno, command[cmdno]);
         idx = line.find('compare = ')
         if idx != -1:
             compareno = line[idx+10:-1]
-            line = line.replace(compareno, r_compare[int(compareno)]);
+            line = line.replace(compareno, compare[compareno]);
         if tmp :
             line = line[:-1] + ' ' + tmp
             tmp = 0
@@ -91,9 +168,74 @@ def p1(fin, basename):
         ret.append(line);
     return ret
 
+def asm(cmd, params, jmp, pref):
+    line = '%s%s'%(pref, cmd)
+    if cmd in ['if', 'elseif']:
+        if cmd == 'elseif':
+            line = '%selif'%pref
+        for p in params:
+            if len(p) == 3:
+                line += ' %s %s %s,'%(p[0], r_compare[p[2]], p[1])
+            else:
+                for v in p:
+                    line += ' ' + v
+                    line += ','
+        line = line[:-1] + ':    # +%d'%jmp
+    elif cmd == 'else':
+        line += ':'
+    elif cmd == 'endif':
+        line = None
+    elif cmd == 'def':
+        line += ' ' + params[0][0] + '():'
+    elif cmd == 'enddef':
+        line = ''
+    elif cmd == 'Set':
+        line = pref + params[0][0] + ' = '
+        count = 0
+        for p in params:
+            if count == 0:
+                count = 1
+                continue
+            elif count == 1:
+                count = 2
+            else:
+                line += ', '
+            line += p[0]
+    elif cmd == 'SetTarget':
+        line += '('
+        for p in params:
+            line += target[p[0]] + ', '
+        line = line[:-2] + ')'
+    elif cmd == 'Add':
+        if len(params) != 2:
+            errrrrrrrrr()
+        line = '%s%s += %s'%(pref, params[0][0], params[1][0])
+    elif cmd == 'Sub':
+        if len(params) != 2:
+            errrrrrrrrr()
+        line = '%s%s -= %s'%(pref, params[0][0], params[1][0])
+    elif cmd == 'Mul':
+        if len(params) != 2:
+            errrrrrrrrr()
+        line = '%s%s *= %s'%(pref, params[0][0], params[1][0])
+    elif cmd == 'jump':
+        line = pref + '# jump +%d'%jmp
+    else:
+        line += '('
+        for p in params:
+            for v in p:
+                line += v + ', '
+        if line[-2] == ',':
+            line = line[:-2] + ')'
+        else:
+            line = line + ')'
+        if jmp != 1:
+            line += '    # +%d'%jmp
+    return line
+
 def p2(fin, basename):
     #fout = open(basename+'.2', 'w')
-    fout = os.path.join(OUTDIR, os.path.splitext(basename)[0]+'.aiscript')
+    fout = os.path.join(OUTDIR, os.path.splitext(basename)[0]+'.py')
     fout = fout.replace(INDIR, '')
     if not os.path.exists(os.path.dirname(fout)):
         os.makedirs(os.path.dirname(fout), exist_ok=True)
@@ -105,41 +247,35 @@ def p2(fin, basename):
         idx = int(i[i.find('[')+1:i.find(']')])
         cmd = re.findall(r'int _command = (.*)\n', i)[0]
         jmp = int(re.findall(r'int _jumpStep = (.*)\n', i)[0])
-        cpr = re.findall(r'int compare = (.*)\n', i)
-        if cpr == []:
-            cpr = 'none'
-        else:
-            cpr = cpr[0]
         params = findblock(i.split('\n'), 'AIScriptParam data')
-        if cmd in ['ElseIF', 'Else', 'EndIf', 'EndDef']:
+        if cmd in ['elseif', 'else', 'endif', 'enddef']:
             pref = pref[:-4]
-        #line = '%d: %s%s'%(idx, pref, cmd)
-        line = '%s%s'%(pref, cmd)
-        if cmd in ['If', 'Def', 'ElseIF', 'Else']:
-            pref += '    '
+            #pref = idx+': '+pref[:-4]
+        row = []
         for p in params:
             columndata = findblock(p.split('\n'), 'Column data')
-            col = 0;
             for c in columndata:
-                if col != 0:
-                    line += ', '
-                col += 1
+                column = []
                 valuedata = findblock(c.split('\n'), 'AIScriptValue data')
                 for vd in valuedata:
                     vtype = int(re.findall(r'int valType = (.*)\n', vd)[0])
                     if vtype == 0:
                         v = re.findall(r'string valString = "(.*)"\n', vd)[0]
-                        v = '<%s>'%v
+                        #v = '<%s>'%v
                     elif vtype == 1:
                         v = re.findall(r'int valInt = (.*)\n', vd)[0]
                     elif vtype == 2:
                         v = re.findall(r'float valFloat = (.*)\n', vd)[0]
-                    line += ' ' + v
+                    column.append(v)
+                cpr = re.findall(r'int compare = (.*)\n', i)[0]
                 if cpr != 'none':
-                    line += ' ' + cpr
-        if jmp != 1:
-            line += ' [+%d]'%jmp
-        fout.write(line+'\n')
+                    column.append(cpr)
+                row.append(column)
+        line = asm(cmd, row, jmp, pref)
+        if cmd in ['if', 'def', 'elseif', 'else']:
+            pref += '    '
+        if line != None:
+            fout.write(line+'\n')
     fout.close()
     return
 
@@ -163,12 +299,14 @@ if __name__ == '__main__':
             for root, dirs, files in os.walk(INDIR):
                 for f in files:
                     if os.path.splitext(f)[1] == '.asset':
+                        print(f)
                         main(os.path.join(root, f))
         else:
             with os.scandir(INDIR) as it:
                 for entry in it:
                     if not entry.name.startswith('.') and entry.is_file():
                         if entry.name[-6:] == '.asset':
+                            print(entry.name)
                             main(entry.name)
     else:
         main(sys.argv[1])
