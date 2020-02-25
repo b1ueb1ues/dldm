@@ -183,8 +183,8 @@ rr_compare = {
     'smallEqual'  : '>=',
     'repudiation' : '!=',
     'equal'       : '==',
-    'large'       : '>' ,
-    'small'       : '<'
+    'large'       : '<' ,
+    'small'       : '>'
 }
 
 
