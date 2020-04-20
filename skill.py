@@ -2,6 +2,8 @@ import x
 
 x.INDIR = 'assets'
 x.OUTDIR = 'out/skill'
+x.CLEAN = True
+x.RENAME = False
 x.TYPE_FILTER = ['GameObject', 'MonoBehaviour']
 x.TYPE_FILTER += ['AnimationClip', 'AnimatorOverrideController']
 

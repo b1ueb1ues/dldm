@@ -3,7 +3,7 @@ from block import *
 import re
 
 OUTDIR = 'out/aiscript'
-INDIR = 'out/all/resources/aiscript'
+INDIR = 'out/ai/aiscript'
 _R = True
 #INFILE = 'out/bos_drg_21000401_03.asset'
 

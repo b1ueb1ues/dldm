@@ -29,6 +29,7 @@ def playeractionhitattribute():
             if i[0] != 'CMN_AVOID':
                 hitda[i[0]] = i[1]
 
+
 aidframe = {}
 aidlabel = {}
 aidhit = {}
@@ -36,6 +37,7 @@ aidhittiming = {}
 def playeraction(fname):
     global aidframe, aidlabel
     aid = re.findall(r'playeraction_(\d+).*', fname)
+    wt = re.findall(r'playeraction/(.*?)/.*', fname)[0].upper()
     if len(aid) == 1:
         aid = int(aid[0])
     else:
@@ -62,27 +64,17 @@ def playeraction(fname):
         frame = int(duration*60+0.01)
         aidframe[aid] = (frame, speed)
 
-    #hd = re.findall(r'string _hitLabel = "(.*?)"', data, re.DOTALL)
-    #hd += re.findall(r'string _hitAttrLabel = "(.*?)"', data, re.DOTALL)
-    #aidhit[aid] = hd
     hd = []
-    for blockdata in findblock(lines, 'HitData'):
-        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitLabel = "(.*?)"', blockdata, re.DOTALL)
-    for blockdata in findblock(lines, 'FireStockBulletData'):
-        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
-    for blockdata in findblock(lines, 'BulletData'):
-        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
-    for blockdata in findblock(lines, 'ArrangeBulletData'):
-        hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _abHitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
+    for blockdata in findblock2(lines, 'Data _data'):
+        #tmp = r'float _seconds = ([0-9\.]*)\n.*?string _.*?Label = "(%s_.*?)"'%wt
+        tmp = r'float _seconds = ([0-9\.]*)\n.*?string _.*?Label = "(.*?)"'
+        r = re.findall(tmp, blockdata, re.DOTALL)
+        hd += r
     aidhit[aid] = []
     aidhittiming[aid] = []
     for i in hd:
         aidhittiming[aid].append(i[0])
         aidhit[aid].append(i[1])
-#    if int(aid) == 691090:
-#        print(aid, hd)
-#        exit()
-    
 
 
 sa = {}
@@ -210,14 +202,18 @@ def main():
         c2 = {}
         co = {}
         fo = {}
+        l1 = []
+        l2 = []
         for i in aid1:
             if i:
                 f1.append(_do(cid, i))
                 c1[i] = coef(i)
+                l1.append(aidhit[i])
         for i in aid2:
             if i:
                 f2.append(_do(cid, i))
                 c2[i] = coef(i)
+                l2.append(aidhit[i])
         for sid in aido:
             aid = aido[sid]
             fo[sid] = []
@@ -250,6 +246,7 @@ def main():
         print('"%s","%s","%s"'%(name, f1, f2),
                 ',"%s(%s) %s(%s)"'%(s1sp, s1sp2, s2sp, s2sp2),
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
+                ',"%s %s"'%(l1, l2),
                 ',"%s | %s","%s","%s","%s"'%(c1, c2, co, fo, timing) 
                 )
 def coef(aid):
@@ -360,4 +357,16 @@ def _do(cid, aid):
 if __name__ == "__main__":
     print('-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-')
     main()
+
+
+
+# backup
+#for blockdata in findblock(lines, 'HitData'):
+#    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitLabel = "(.*?)"', blockdata, re.DOTALL)
+#for blockdata in findblock(lines, 'FireStockBulletData'):
+#    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
+#for blockdata in findblock(lines, 'BulletData'):
+#    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _hitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
+#for blockdata in findblock(lines, 'ArrangeBulletData'):
+#    hd += re.findall(r'float _seconds = ([0-9\.]*)\n.*?string _abHitAttrLabel = "(.*?)"', blockdata, re.DOTALL)
 
