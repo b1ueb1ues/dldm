@@ -8,10 +8,10 @@ RENAME = True
 
 DEBUG = 0
 if DEBUG:
-    INDIR = 'out/img.0/resources/platinumlegendopeningsetting'
-DBG_SRCROOT = 'out/img.0'
-DBG_IDFILE = 'out/img.0/_/%s'
-DBG_CONTAINERS = 'out/img.0/containers.txt'
+    INDIR = 'out/img/resources/emotion/eventcg/mainstory'
+DBG_SRCROOT = 'out/img'
+DBG_IDFILE = 'out/img/_/%s'
+DBG_CONTAINERS = 'out/img/containers.txt'
 ###############################################################################
 import os
 import re
@@ -26,17 +26,27 @@ else:
         return
 
 def _dst(fname):
+    dprint(fname)
     global DST, inprefix
     if LOOSE == 2:
         d, b = os.path.split(fname)
-        dst = os.path.join(DST, d[inprefix:].replace('/','.')+'/'+b)
+        lastname = d[inprefix:].replace('/','.')+'/'+b
+        if lastname[0] == '/':
+            lastname = lastname[1:]
+        dst = os.path.join(DST, lastname)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         return dst
     elif LOOSE:
-        dst = os.path.join(DST, fname[inprefix:].replace('/','_'))
+        lastname = fname[inprefix:].replace('/','_')
+        if lastname[0] == '/':
+            lastname = lastname[1:]
+        dst = os.path.join(DST, lastname)
         return dst
     else:
-        dst = os.path.join(DST, fname[inprefix:])
+        lastname = fname[inprefix:]
+        if lastname[0] == '/':
+            lastname = lastname[1:]
+        dst = os.path.join(DST, lastname)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         return dst
 
@@ -166,22 +176,26 @@ def _mat(fname, outname=None):
         #output ma
         base, ext = os.path.splitext(outname)
         dname = os.path.dirname(outname)
-        dst = _dst(dname+'/'+name+'.mat.png')
-        #dst = _dst(base+'.png')
+        dst = _dst(dname+'_ma/'+name+'.mat.png')
         if os.path.exists(dst):
             raise
+        #count = 0
+        #while os.path.exists(dst):
+        #    dst = _dst(dname+'_ma/'+name+'.%d.mat.png'%count)
+        #    count += 1
         c = _alpha(m, a)
         c.save(dst)
     if isyuva:
         #output yuva
         base, ext = os.path.splitext(outname)
         dname = os.path.dirname(outname)
-        dst = _dst(dname+'/'+name+'.mat.png')
-        #dst = _dst(base+'.png')
-        count = 0
-        while os.path.exists(dst):
-            dst = _dst(dname+'/'+name+'.%d.mat.png'%count)
-            count += 1
+        dst = _dst(dname+'_yuv/'+name+'.mat.png')
+        if os.path.exists(dst):
+            raise
+        #count = 0
+        #while os.path.exists(dst):
+        #    dst = _dst(dname+'_yuv/'+name+'.%d.mat.png'%count)
+        #    count += 1
         c = _yuv(y, u, v, ta)
         c.save(dst)
 
@@ -250,7 +264,8 @@ def _asset(fname):
     if len(mat)>0:
         for i in mat:
             if i != '0':
-                _mat(_src(i), fname+'/%d.mat'+i)
+                _mat(_src(i), fname+'.mat')
+                #_mat(_src(i), fname+'/%s.mat'%i)
 
 def clean(dst):
     os.system('rm -r %s'%dst)
@@ -311,10 +326,11 @@ def main():
                 _asset(src)
 
 def test():
-    m = _yuv(INDIR+'/_/-5468202399702066998.png',
-        INDIR+'/_/-7892557579526219953.png',
-        INDIR+'/_/2115422073092249201.png')
-    ma = _alpha(m, INDIR+'/_/-6566012995429355999.png')
+    #m = _yuv(INDIR+'/_/-5468202399702066998.png',
+    #    INDIR+'/_/-7892557579526219953.png',
+    #    INDIR+'/_/2115422073092249201.png')
+    m = Image.open('1.png')
+    ma = _alpha(m, '2.png')
     ma.save('test.png')
 
 if __name__ == '__main__':
