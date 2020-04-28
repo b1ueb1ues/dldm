@@ -163,8 +163,8 @@ def common(obj, fpname, asset_path, noext=None):
     fpname = basename + ext
     count = 0
     while os.path.exists(fpname):
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(data.dump())
@@ -182,8 +182,8 @@ def gameobject(obj, fpname, asset_path, noext):
     fpname = basename + ext
     count = 0
     while os.path.exists(fpname):
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write(go.dump())
@@ -260,8 +260,8 @@ def monobehaviour(obj, fpname, asset_path, noext):
     fpname = basename + ext
     count = 0
     while os.path.exists(fpname):
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
@@ -291,8 +291,8 @@ def monoscript(obj, fpname, asset_path, noext):
     fpname = basename + ext
     count = 0
     while os.path.exists(fpname):
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'w', encoding='utf8')
     f.write('====================\r\n%s\r\n'%obj.path_id)
     f.write('--------------------\r\n%s\r\n'%data.path_id)
@@ -310,8 +310,8 @@ def textasset(obj, fpname, asset_path, noext):
     fpname = basename + ext
     count = 0
     while os.path.exists(fpname):
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     f = open(fpname, 'wb')
     line = '====================\r\n%s\r\n'%obj.path_id
     line += '--------------------\r\n%s\r\n'%data.path_id
@@ -333,8 +333,8 @@ def sprite(obj, fpname, asset_path, noext):
     while os.path.exists(fpname):
         if not CLEAN:
             return
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     if ext == '':
         data.image.save(fpname,'png')
     else:
@@ -353,8 +353,8 @@ def texture2d(obj, fpname, asset_path, noext):
     while os.path.exists(fpname):
         if not CLEAN:
             return
-        count += 1
         fpname = basename+'.%d'%count + ext
+        count += 1
     try:
         if ext == '':
             data.image.save(fpname, 'png')
@@ -392,16 +392,29 @@ def main():
         count = 0
         base = DST
         while os.path.exists(DST):
-            count += 1
             DST = base + '.%d'%count
+            count += 1
 
+    root_files = {}
     for root, dirs, files in os.walk(ASSETS, topdown=False):
         if '.git' in root:
             continue
+        root_files[root] = files
+
+    for root in sorted(root_files.keys()):
         print(root)
+        files = root_files[root]
         for f in files:
             src = os.path.realpath(os.path.join(root, f))
             read_orig_file(src)
+
+#    for root, dirs, files in os.walk(ASSETS, topdown=False):
+#        if '.git' in root:
+#            continue
+#        print(root)
+#        for f in files:
+#            src = os.path.realpath(os.path.join(root, f))
+#            read_orig_file(src)
 
     ct = os.path.join(DST, 'containers.txt')
     f = open(ct, 'w', encoding='utf8')
