@@ -103,6 +103,7 @@ public enum ActionTarget // TypeDefIndex: 8512
 	public const ActionTarget REGISTERED_02 = 45; // 0x0
 	public const ActionTarget REGISTERED_03 = 46; // 0x0
 	public const ActionTarget REGISTERED_04 = 47; // 0x0
+	public const ActionTarget HOSTILE_DEAD_ALIVE_00 = 48; // 0x0
 }
 
 // Namespace: 
