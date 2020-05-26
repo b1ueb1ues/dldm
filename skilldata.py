@@ -80,6 +80,7 @@ def playeraction(fname):
 sa = {}
 sae = {}
 ssp = {}
+sspe = {}
 def skilldata():
     global SKILLDATA
     global sa, sae, ssp
@@ -91,12 +92,19 @@ def skilldata():
         trans = re.findall(r'int _TransSkill = (\d+)\n', sde)
         sp = re.findall(r'int _Sp = (\d+)\n', sde)[0]
         sp2 = re.findall(r'int _SpLv2 = (\d+)\n', sde)[0]
+        sp3 = re.findall(r'int _SpLv3 = (\d+)\n', sde)[0]
+        sp4 = re.findall(r'int _SpLv4 = (\d+)\n', sde)[0]
+        spe = re.findall(r'int _SpEdit = (\d+)\n', sde)[0]
+        spe2 = re.findall(r'int _SpLv2Edit = (\d+)\n', sde)[0]
+        spe3 = re.findall(r'int _SpLv3Edit = (\d+)\n', sde)[0]
+        spe4 = re.findall(r'int _SpLv4Edit = (\d+)\n', sde)[0]
         sid = int(sid[0])
         if sid == 0:
             continue
         aid = int(aid[0])
         trans = int(trans[0])
-        ssp[sid] = (sp, sp2)
+        ssp[sid] = (sp, sp2, sp3, sp4)
+        sspe[sid] = (spe, spe2, spe3, spe4)
         sa[sid] = [aid, trans]
     for i in sa:
         aid = sa[i]
@@ -125,7 +133,8 @@ def textlabel():
         cid = re.findall(r'int _Id = (\d+)\n', i)[0]
         bid = re.findall(r'int _BaseId = (\d+)\n', i)[0]
         vid = re.findall(r'int _VariationId = (\d+)\n', i)[0]
-        idid[cid] = (int(bid), int(vid))
+        editskillid = re.findall(r'int _EditSkillId = (\d+)\n', i)[0]
+        idid[cid] = (int(bid), int(vid), int(editskillid))
 
 labelframe = {}
 labelid = {}
@@ -187,10 +196,29 @@ def main():
             continue
         aid1 = sae[int(cid+'1')]
         aid2 = sae[int(cid+'2')]
-        s1sp = ssp[int(cid+'1')][0]
-        s2sp = ssp[int(cid+'2')][0]
-        s1sp2 = ssp[int(cid+'1')][1]
-        s2sp2 = ssp[int(cid+'2')][1]
+
+        s1sp = 0
+        for i in ssp[int(cid+'1')]:
+            if int(i) != 0:
+                s1sp = i
+        s2sp = 0
+        for i in ssp[int(cid+'2')]:
+            if int(i) != 0:
+                s2sp = i
+
+        s1spe = 0
+        for i in sspe[int(cid+'1')]:
+            if int(i) != 0:
+                s1spe = i
+        s2spe = 0
+        for i in sspe[int(cid+'2')]:
+            if int(i) != 0:
+                s2spe = i
+
+        #s1sp = ssp[int(cid+'1')][0]
+        #s2sp = ssp[int(cid+'2')][0]
+        #s1sp2 = ssp[int(cid+'1')][1]
+        #s2sp2 = ssp[int(cid+'2')][1]
         aido = {}
         for i in range(3, 10):
             sid = int(cid+str(i))
@@ -224,6 +252,17 @@ def main():
 
         bvid = idid[cid]
         bvid = '%d;%d'%(bvid[0], bvid[1])
+        eid = str(idid[cid][2])[-1]
+        if eid == '0':
+            #spstr = ',"%s %s"'%(s1sp, s2sp)
+            spstr = ',"%s %s (0:)"'%(s1sp, s2sp)
+        elif eid == '1':
+            #spstr = ',"%s(%s) %s"'%(s1sp, s1spe, s2sp)
+            spstr = ',"%s %s (1:%s)"'%(s1sp, s2sp, s1spe)
+        elif eid == '2':
+            spstr = ',"%s %s (2:%s)"'%(s1sp, s2sp, s2spe)
+        else:
+            raise
 
         aids = {}
         for i in aid1:
@@ -244,7 +283,7 @@ def main():
                 timing += '%.4f, '%(float(j))
             timing += '| '
         print('"%s","%s","%s"'%(name, f1, f2),
-                ',"%s(%s) %s(%s)"'%(s1sp, s1sp2, s2sp, s2sp2),
+                spstr,
                 ',"%s(%s) %s %s"'%(cid, bvid, aid1, aid2),
                 ',"%s %s"'%(l1, l2),
                 ',"%s | %s","%s","%s","%s"'%(c1, c2, co, fo, timing) 
