@@ -8,7 +8,7 @@ RENAME = True
 
 DEBUG = 0
 if DEBUG:
-    INDIR = 'out/img/resources/emotion/eventcg/mainstory'
+    INDIR = 'out/img/images/ingame/minimap/bg035/atlas'
 DBG_SRCROOT = 'out/img'
 DBG_IDFILE = 'out/img/_/%s'
 DBG_CONTAINERS = 'out/img/containers.txt'
@@ -30,7 +30,9 @@ def _dst(fname):
     global DST, inprefix
     if LOOSE == 2:
         d, b = os.path.split(fname)
-        lastname = d[inprefix:].replace('/','.')+'/'+b
+        dd = d.split('/')
+        tmp = '/'.join(dd[:-1])
+        lastname = tmp[inprefix:].replace('/','.')+'/'+dd[-1]+'.'+b
         if lastname[0] == '/':
             lastname = lastname[1:]
         dst = os.path.join(DST, lastname)
@@ -89,6 +91,8 @@ def _alpha(m, a):
     return merged
 
 def _yuv(y, cb, cr, a=None): # params: filename
+    if not y:
+        return
     tmp = Image.open(y)
     size = tmp.size
     (z,z,z,y) = tmp.convert('RGBA').split()
@@ -177,12 +181,12 @@ def _mat(fname, outname=None):
         base, ext = os.path.splitext(outname)
         dname = os.path.dirname(outname)
         dst = _dst(dname+'_ma/'+name+'.mat.png')
-        if os.path.exists(dst):
-            raise
-        #count = 0
-        #while os.path.exists(dst):
-        #    dst = _dst(dname+'_ma/'+name+'.%d.mat.png'%count)
-        #    count += 1
+        #if not os.path.exists(dst):
+        #    raise
+        count = c0
+        while os.path.exists(dst):
+            dst = _dst(dname+'_ma/'+name+'.mat.%d.png'%count)
+            count += 1
         c = _alpha(m, a)
         c.save(dst)
     if isyuva:
@@ -190,14 +194,15 @@ def _mat(fname, outname=None):
         base, ext = os.path.splitext(outname)
         dname = os.path.dirname(outname)
         dst = _dst(dname+'_yuv/'+name+'.mat.png')
-        if os.path.exists(dst):
-            raise
-        #count = 0
-        #while os.path.exists(dst):
-        #    dst = _dst(dname+'_yuv/'+name+'.%d.mat.png'%count)
-        #    count += 1
+        #if os.path.exists(dst):
+        #    raise
+        count = 0
+        while os.path.exists(dst):
+            dst = _dst(dname+'_yuv/'+name+'.mat.%d.png'%count)
+            count += 1
         c = _yuv(y, u, v, ta)
-        c.save(dst)
+        if c:
+            c.save(dst)
 
 def asset_save(img, fname, name, t):
     outname = os.path.join(fname, name)
@@ -257,7 +262,8 @@ def _asset(fname):
                 c = _yuv( _src(m[0]), _src(m[1]), _src(m[2]), _src(a) )
             else:
                 c = _alpha( _src(m), _src(a) )
-            asset_save(c, fname, name+'_'+i, 'yuv')
+            if c:
+                asset_save(c, fname, name+'_'+i, 'yuv')
 
     mat = re.findall(r'PPtr<\$Material>.*\n.*\n.*m_PathID = (.*)\n', data)
     count = 0

@@ -178,7 +178,7 @@ r_compare = {
 }
 
 # script If A 0 large means 0 > A
-# for python we usually use A > 0, so reverse the direction of comare
+# for python we usually use A > 0, so reverse the direction of compare
 rr_compare = {
     'largeEqual'  : '<=',
     'smallEqual'  : '>=',
@@ -248,15 +248,15 @@ def asm(cmd, params, jmp, pref):
             line += p[0]
     elif cmd == 'Add':
         if len(params) != 2:
-            errrrrrrrrr()
+            raise
         line = '%s%s += %s'%(pref, params[0][0], params[1][0])
     elif cmd == 'Sub':
         if len(params) != 2:
-            errrrrrrrrr()
+            raise
         line = '%s%s -= %s'%(pref, params[0][0], params[1][0])
     elif cmd == 'Mul':
         if len(params) != 2:
-            errrrrrrrrr()
+            raise
         line = '%s%s *= %s'%(pref, params[0][0], params[1][0])
     elif cmd == 'jump':
         line = pref + '#jump +%d'%jmp
