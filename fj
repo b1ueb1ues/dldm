@@ -44,7 +44,7 @@ p4: hp>50
 p5: hp>25 (at least one whole phase)
     summon
     double
-    black_moon 
+    blood_moon 
   ->double
  |  +
  |  charge_combo
