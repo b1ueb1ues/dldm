@@ -1,4 +1,4 @@
-import x, c
+from lib import x, c
 
 x.INDIR = 'assets'
 x.OUTDIR = 'out/img'

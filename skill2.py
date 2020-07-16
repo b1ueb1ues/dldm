@@ -16,7 +16,7 @@ PLAYERACTIONHITATTRIBUTE = PREFIX+'/resources/master/playeractionhitattribute.as
 ###############################################################################
 import os
 import re
-from block import *
+from lib.block import *
 
 
 hitda = {}

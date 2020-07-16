@@ -1,4 +1,4 @@
-import x
+from lib import x
 
 x.INDIR = 'assets'
 x.OUTDIR = 'out/skill'

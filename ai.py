@@ -1,4 +1,4 @@
-import x
+from lib import x
 
 x.PATH_FILTER = ['aiscript']
 x.PREFIX = 'assets/_gluonresources/resources'
