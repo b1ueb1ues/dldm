@@ -280,8 +280,8 @@ def main():
     global INDIR, IGNORE, inprefix
     global ROOT, SRC, DST
     global containers, idfile
-    ROOT = os.path.dirname(os.path.realpath(__file__))
-    SRC = INDIR
+    ROOT = os.path.dirname(os.path.realpath(__file__)) + '/..'
+    SRC = os.path.join(ROOT, INDIR)
     DST = os.path.join(ROOT, OUTDIR)
     inprefix = len(SRC)+1
     containers = {}

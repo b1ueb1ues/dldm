@@ -375,7 +375,7 @@ def main():
     if len(sys.argv) == 2:
         INDIR = sys.argv[1]
 
-    ROOT = os.path.dirname(os.path.realpath(__file__))
+    ROOT = os.path.dirname(os.path.realpath(__file__)) + '/..'
     ASSETS = os.path.join(ROOT, INDIR)
     DST = os.path.join(ROOT, OUTDIR)
     if 'TYPE_FILTER' not in globals():
