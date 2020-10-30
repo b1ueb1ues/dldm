@@ -110,6 +110,8 @@ def skilldata():
         aid = sa[i]
         while aid[-1] != 0:
             aid = aid[:-1] + sa[aid[-1]][:]
+            if aid[-1] and aid[-1] == sa[aid[-1]][1]: # check if loop
+                aid[-1] = 0
             if aid[-1] == i:
                 aid[-1] = 0
         sae[i] = aid
@@ -261,8 +263,8 @@ def main():
             spstr = ',"%s %s (1:%s)"'%(s1sp, s2sp, s1spe)
         elif eid == '2':
             spstr = ',"%s %s (2:%s)"'%(s1sp, s2sp, s2spe)
-        else:
-            raise
+        #else:
+        #    raise
 
         aids = {}
         for i in aid1:
@@ -346,6 +348,7 @@ idwp = {
         '6':'BOW',
         '7':'ROD',
         '8':'CAN',
+        '9':'GUN',
         }
 
 def _do(cid, aid):

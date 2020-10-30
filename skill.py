@@ -18,6 +18,7 @@ x.PATH_FILTER += ['resources/actions/playeraction/kat']
 x.PATH_FILTER += ['resources/actions/playeraction/lan']
 x.PATH_FILTER += ['resources/actions/playeraction/rod']
 x.PATH_FILTER += ['resources/actions/playeraction/swd']
+x.PATH_FILTER += ['resources/actions/playeraction/gun']
 
 x.PREFIX = 'assets/_gluonresources/'
 
