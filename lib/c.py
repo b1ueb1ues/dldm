@@ -183,7 +183,7 @@ def _mat(fname, outname=None):
         dst = _dst(dname+'_ma/'+name+'.mat.png')
         #if not os.path.exists(dst):
         #    raise
-        count = c0
+        count = 0
         while os.path.exists(dst):
             dst = _dst(dname+'_ma/'+name+'.mat.%d.png'%count)
             count += 1
